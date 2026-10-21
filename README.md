@@ -1,58 +1,111 @@
-# Manish Kumar — Editorial Canvas Portfolio
+# Pia Nicole Macabangon — Portfolio
 
-A bespoke developer portfolio combining:
-1. **Interactive Canvas & Sketchbook Architecture** from [Yuezhiui/canvas-design](https://github.com/Yuezhiui/canvas-design.git)
-2. **Deep Content & Project Inventory** from [Yuezhiui/portofolio-1](https://github.com/Yuezhiui/portofolio-1)
-3. **Luxury Editorial Typography & Color Palette** faithfully copied from [Apex & Asphalt Preview](https://175d351f-e563-4b34-ab9a-3783acffcc60.app-preview.com/)
-
----
-
-## 🎨 Visual Identity & Color System
-
-- **Parchment Paper Background**: `hsl(42, 28%, 93%)` (`#F5F2EB`)
-- **Deep Charcoal Ink**: `hsl(240, 7%, 6%)` (`#0F0F11`)
-- **Warm Bone Card & Plate Surface**: `hsl(42, 30%, 87%)` (`#EBE6DC`)
-- **Muted Ash Editorial Grey**: `hsl(36, 7%, 33%)` (`#5A5752`)
-- **Luxury Oxblood Highlight**: `hsl(0, 59%, 30%)` (`#7A1F1F`)
-- **Hairline Border Rules**: `hsl(36, 14%, 78%)` (`#CFC8BC`)
-- **Micro-Texture Paper Grain**: SVG fractal noise filter with multiply blend mode
-
-### Typography Stack
-- **Headings & Display**: `Fraunces` (weights 300..700) with signature `.display-italic` accents
-- **Body & Clean UI**: `Inter Tight` (weights 300..700)
-- **Monospace Metadata & Code**: `JetBrains Mono`
+> **BS Computer Engineering Student & Systems Developer**  
+> ICCT Colleges Inc. · Cainta, Rizal, Philippines  
+> [GitHub Profile](https://github.com/Pia-Macabangon) • [LinkedIn Profile](https://www.linkedin.com/in/pia-macabangon) • [Repository](https://github.com/Pia-Macabangon/macabangon-portfolio)
 
 ---
 
-## 📐 Features & Interactive Mechanics
+## 👩‍💻 About Me
 
-- **Interactive Canvas Ink Trail**: Physics-based organic ink stroke trail that follows the cursor, fading smoothly with toggle control in the footer (`Ink trail on / off`).
-- **Interactive Sketch Drawing Pad**: Full HTML5 canvas sketchpad on the Studio page (`about.html`) allowing visitors to sketch diagrams or signatures, clear the canvas, and export as PNG.
-- **Avatar / QR-Code Flip Toggle**: Seamless toggle on the hero plate between Manish's portrait avatar (`pfp-latest.jpg`) and mobile QR code (`qr-code.webp`).
-- **Project Case Study Lightbox**: Native `<dialog class="art-dialog">` modal allowing visitors to inspect project screenshots, live metrics, tech tags, and direct demo/GitHub links.
-- **Live India Clock (IST)**: Real-time clock in the top running issue bar tracking Indian Standard Time.
-- **Daily Pulse / Mood Decoration**: Dynamically displays one of the 7 mood badges based on the day of the week.
-- **Complete Project Folio**:
-  1. **Ossium** (`ossium.in` — Next.js, TypeScript, PostgreSQL, Drizzle, Tailwind, 1,200+ users)
-  2. **MX-Icons** (React SVG icon library — 4k+ downloads, 110+ stars)
-  3. **Secure2FA** (Java Spring Boot, Spring Security, React — TOTP RFC 6238)
-  4. **BristoHQ-Ui** (Accessible component primitives — React, TypeScript, CSS)
-  5. **BlogZone** (MERN content publication suite)
-  6. **Portfolio Edition II** (Tailwind responsive grid)
-  7. **QuickRef UI Clone** (Productivity cheatsheet)
-  8. **BlogZone-v1** (Java MVC Spring Boot edition with Thymeleaf)
+I am a senior 4th-year Computer Engineering undergraduate at ICCT Colleges Inc. with a strong focus on embedded computing, low-level hardware architecture, sensor telemetry, and modern software development. My work bridges the gap between bare-metal microcontroller firmware and full-stack software applications, delivering robust solutions ranging from automated hardware terminals to desktop GUI management platforms.
 
 ---
 
-## 🚀 Running the Project
+## 🛠️ Technical Stack & Skills
 
-You can open `index.html` directly in any web browser, or serve it using any local static file server:
+### Embedded Systems & Hardware
+- **Platforms**: Arduino Uno & Nano, Raspberry Pi 4B, Proteus VSM
+- **Circuitry & Sensors**: Analog signal conditioning, pH Meter V1.0 calibration, Turbidity & TDS telemetry, NEMA 17 Stepper Motor interfacing, I2C 128x64 OLED display modules, optical sheet sensors
+- **Architecture**: Microcontroller Systems Design, Computer Architecture & Organization, Digital Logic Circuit Design, Serial Communication (UART/I2C/SPI)
 
-```powershell
-# Using Python
-python -m http.server 3000
+### Programming & Software
+- **Languages**: C++, Embedded C, Python 3.x, Java, SQL, HTML5, CSS3, JavaScript (ES6+)
+- **Software Frameworks**: Java Swing (Multithreaded GUI), Vanilla JavaScript & Modern CSS
+- **Databases & Security**: MySQL/SQL relational persistence, SHA-256 credential hashing, Role-Based Access Control (RBAC)
 
-# Using Node / npx
+### Engineering Toolchains
+- **Version Control**: Git & GitHub workflows
+- **Simulation & EDA**: Proteus VSM Circuit Simulation
+- **Development Environments**: Visual Studio Code, Arduino IDE, NetBeans / IntelliJ
+
+---
+
+## 📂 Featured Projects & Systems
+
+### 01. Self-Service Printing Kiosk
+*Capstone System Architect & Hardware Integration*
+- Standalone multi-paper automated document printing terminal built on a **Raspberry Pi 4B** controller.
+- **Hardware Integration**: Custom dual-printer spooling architecture (Short/A4 & Long sheets via dual Epson L121 printers), optical sheet sensors, and a **NEMA 17 Stepper Motor** document dispenser.
+- **Payment & Telemetry**: Integrated multi-coin validator with automated credit tracking and a background Python hardware daemon.
+- **Source Code**: [GitHub Repository](https://github.com/Pia-Macabangon/Printing-Kiosk)
+
+### 02. AquaSense
+*Arduino Firmware & Sensor Telemetry Lab*
+- Comprehensive water-quality monitoring system simulating real-time environmental telemetry in **Proteus VSM**.
+- **Sensor Calibration**: Multi-sensor analog signal conditioning for pH, Turbidity, Total Dissolved Solids (TDS), and water temperature.
+- **Real-Time Display**: I2C 128x64 OLED dashboard rendering live metrics with multi-tier water toxicity safety heuristics and alert triggers.
+- **Source Code**: [GitHub Repository](https://github.com/Pia-Macabangon/AquaSense)
+
+### 03. StockAlert
+*Desktop Application & Database Architect*
+- Multi-threaded desktop inventory management and market watchlist platform built in **Java Swing**.
+- **Security & RBAC**: SHA-256 password hashing and role-based credential security.
+- **Database & Visuals**: SQL relational database persistence for real-time inventory tracking, threshold alert triggers, and dynamic visualization graphs.
+- **Source Code**: [GitHub Repository](https://github.com/Pia-Macabangon/StockAlert)
+
+---
+
+## 📜 Verified Academic Credentials & Seminars
+
+- **Advancing Secure Networking for Smart Environment**: Design, Threat Modeling, and Mitigation Strategies — ICCT Colleges Amphitheater (2026)
+- **Bioinformatics & Digital Science Information in the Philippine Context**: Data Analysis & Computational Biology — ICCT Colleges (2026)
+- **Advancing Research & Development in IoT for Smart Environments**: 12th Engineering Day Seminar, ICCT Colleges (2025)
+- **Certificate of Membership — ICCT Engineering Society (IES)**: Active professional collegiate member (Academic Years 2024–2025)
+
+---
+
+## 🌐 Portfolio Website Highlights
+
+- **Interactive Typewriter Headers**: Real-time typewriter typing animation with terminal blinking cursor across key section titles.
+- **Scroll Pop-Up Animation**: Tactile, cascading scroll reveal for project cards, credentials, and technical stack bars.
+- **Interactive Wall**: Digital community drawing canvas allowing visitors to doodle sketches, write notes, and pin them to the interactive board.
+- **Dark / Light Mode**: High-contrast theme toggle with custom minimal technical grid and ambient lighting.
+- **Fully Responsive**: Optimized layout for desktop, tablet, and mobile viewports following semantic HTML5 and modern CSS best practices.
+
+---
+
+## 💻 Running the Portfolio Locally
+
+To run this portfolio locally on your computer:
+
+```bash
+# Clone the repository
+git clone https://github.com/Pia-Macabangon/macabangon-portfolio.git
+
+# Navigate to the project directory
+cd macabangon-portfolio
+
+# Open index.html directly in your default browser, or use a local static server:
+# Using Python:
+python -m http.server 5500
+
+# Using Node (npx):
 npx serve .
 ```
-Then visit `http://localhost:3000`.
+
+Visit `http://localhost:5500` in your web browser.
+
+---
+
+## 📬 Contact & Connect
+
+- **Name**: Pia Nicole Macabangon
+- **Degree**: BS Computer Engineering (4th Year Senior), ICCT Colleges Inc.
+- **Email**: [piamacabangon@gmail.com](mailto:piamacabangon@gmail.com)
+- **GitHub**: [github.com/Pia-Macabangon](https://github.com/Pia-Macabangon)
+- **LinkedIn**: [linkedin.com/in/pia-macabangon](https://www.linkedin.com/in/pia-macabangon)
+
+---
+
+© 2026 Pia Nicole Macabangon. All rights reserved.
