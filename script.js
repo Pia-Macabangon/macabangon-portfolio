@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   'use strict';
 
   /* ==========================================================================
@@ -560,7 +560,7 @@
     }
 
     /* ==========================================================================
-       10. The Wall (Live Real-Time Doodle Preview + Global Community Cloud Sync)
+       10. The Wall (Live Real-Time Doodle Preview & Visitor Wall)
        ========================================================================== */
     const initTheWall = () => {
       const wallContainer = document.querySelector('#wall-cards-container');
@@ -580,16 +580,6 @@
       const liveAuthorEl = document.querySelector('#live-doodle-author');
       const liveCaptionEl = document.querySelector('#live-doodle-caption');
       const liveAvatarEl = document.querySelector('#live-doodle-avatar');
-
-      // Cloud Sync Elements
-      const wallCloudBtn = document.querySelector('#wall-cloud-btn');
-      const cloudStatusBadge = document.querySelector('#cloud-status-badge');
-      const wallCloudModal = document.querySelector('#wall-cloud-modal');
-      const wallCloudModalClose = document.querySelector('#wall-cloud-modal-close');
-      const wallCloudModalBackdrop = document.querySelector('#wall-cloud-modal-backdrop');
-      const wallCloudUrlInput = document.querySelector('#wall-cloud-url-input');
-      const wallCloudSaveBtn = document.querySelector('#wall-cloud-save-btn');
-      const wallCloudDisconnectBtn = document.querySelector('#wall-cloud-disconnect-btn');
 
       // Inter-tab Real-time Broadcast Sync
       const wallBroadcast = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('pia-wall-broadcast') : null;
@@ -637,23 +627,6 @@
           drawingColor: '#38bdf8'
         }
       ];
-
-      const getCloudUrl = () => {
-        let url = localStorage.getItem('pia-wall-cloud-url') || '';
-        if (!url) return '';
-        return url.trim().replace(/\/+$/, '').replace(/\.json$/, '');
-      };
-
-      const updateCloudBadge = () => {
-        const url = getCloudUrl();
-        if (cloudStatusBadge) {
-          cloudStatusBadge.style.display = url ? 'inline-flex' : 'none';
-        }
-        const btnText = document.querySelector('#wall-cloud-btn-text');
-        if (btnText) {
-          btnText.textContent = url ? '☁️ Cloud Active' : '☁️ Sync Online';
-        }
-      };
 
       // Helper: IDs of pins created by this visitor on this browser
       const getMyPinIds = () => {
@@ -759,8 +732,6 @@
           ownerBtnText.textContent = isOwner ? '🔓 Exit Owner' : '🔒 Owner Access';
         }
 
-        updateCloudBadge();
-
         // Clear existing cards EXCEPT the live preview card
         wallContainer.querySelectorAll('.wall-pin-card:not(#live-doodle-card)').forEach(c => c.remove());
 
@@ -787,7 +758,7 @@
           if (canDelete) {
             const deleteTitle = isOwner && !isMyPin ? 'Owner Delete: Remove pin' : 'Delete your doodle';
             const deleteClass = isOwner && !isMyPin ? 'owner-pin-delete' : 'my-pin-delete';
-            deleteBtnHtml = `<button class="wall-card-delete-btn ${deleteClass}" type="button" data-index="${index}" data-id="${pin.id}" data-cloud="${pin.cloudKey || ''}" title="${deleteTitle}">✕</button>`;
+            deleteBtnHtml = `<button class="wall-card-delete-btn ${deleteClass}" type="button" data-index="${index}" data-id="${pin.id}" title="${deleteTitle}">✕</button>`;
           }
 
           let myPinBadgeHtml = isMyPin ? `<span class="my-pin-tag">YOUR PIN</span>` : '';
@@ -817,7 +788,6 @@
             e.stopPropagation();
             const idx = parseInt(btn.dataset.index, 10);
             const pinId = btn.dataset.id;
-            const cloudKey = btn.dataset.cloud;
             const currentPins = getStoredPins();
             const targetPin = currentPins[idx];
             if (!targetPin) return;
@@ -835,11 +805,6 @@
               } catch (err) {}
               removeMyPinId(pinId);
 
-              // Delete from cloud if synced
-              if (cloudKey) {
-                deletePinFromCloud(cloudKey);
-              }
-
               renderWall();
               if (wallBroadcast) wallBroadcast.postMessage({ type: 'wall-updated' });
               if (status) status.textContent = isOwner && !isMyPin ? 'Pin removed by Owner.' : 'Your doodle was removed from The Wall.';
@@ -848,126 +813,8 @@
         });
       };
 
-      // Cloud Synchronizer Methods
-      const syncWithCloud = async () => {
-        const cloudUrl = getCloudUrl();
-        if (!cloudUrl) return;
-
-        try {
-          const res = await fetch(`${cloudUrl}/pins.json`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data && typeof data === 'object') {
-              const cloudPins = Object.keys(data).map(key => ({
-                ...data[key],
-                cloudKey: key
-              })).reverse();
-
-              const localPins = getStoredPins();
-              const cloudIds = new Set(cloudPins.map(p => p.id));
-              const unmergedLocal = localPins.filter(p => !cloudIds.has(p.id) && !p.id.startsWith('seed-'));
-
-              const merged = [...cloudPins, ...unmergedLocal];
-              localStorage.setItem('pia-wall-pins', JSON.stringify(merged));
-              renderWall();
-            }
-          }
-        } catch (e) {
-          console.warn('Cloud sync error:', e);
-        }
-      };
-
-      const pushPinToCloud = async (pin) => {
-        const cloudUrl = getCloudUrl();
-        if (!cloudUrl) return;
-        try {
-          const res = await fetch(`${cloudUrl}/pins.json`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(pin)
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.name) {
-              pin.cloudKey = data.name;
-              const pins = getStoredPins();
-              const match = pins.find(p => p.id === pin.id);
-              if (match) match.cloudKey = data.name;
-              localStorage.setItem('pia-wall-pins', JSON.stringify(pins));
-            }
-          }
-        } catch (e) {
-          console.warn('Failed pushing pin to cloud:', e);
-        }
-      };
-
-      const deletePinFromCloud = async (cloudKey) => {
-        const cloudUrl = getCloudUrl();
-        if (!cloudUrl || !cloudKey) return;
-        try {
-          await fetch(`${cloudUrl}/pins/${cloudKey}.json`, { method: 'DELETE' });
-        } catch (e) {}
-      };
-
-      const resetCloudWall = async () => {
-        const cloudUrl = getCloudUrl();
-        if (!cloudUrl) return;
-        try {
-          await fetch(`${cloudUrl}/pins.json`, { method: 'PUT', body: JSON.stringify({}) });
-        } catch (e) {}
-      };
-
-      // Cloud modal event handlers
-      if (wallCloudBtn) {
-        wallCloudBtn.addEventListener('click', () => {
-          if (!wallCloudModal) return;
-          if (wallCloudUrlInput) wallCloudUrlInput.value = getCloudUrl();
-          wallCloudModal.style.display = 'flex';
-          wallCloudModal.setAttribute('aria-hidden', 'false');
-        });
-      }
-
-      const closeCloudModal = () => {
-        if (!wallCloudModal) return;
-        wallCloudModal.style.display = 'none';
-        wallCloudModal.setAttribute('aria-hidden', 'true');
-      };
-
-      if (wallCloudModalClose) wallCloudModalClose.addEventListener('click', closeCloudModal);
-      if (wallCloudModalBackdrop) wallCloudModalBackdrop.addEventListener('click', closeCloudModal);
-
-      if (wallCloudSaveBtn) {
-        wallCloudSaveBtn.addEventListener('click', () => {
-          const rawUrl = wallCloudUrlInput ? wallCloudUrlInput.value.trim() : '';
-          if (!rawUrl || !rawUrl.startsWith('http')) {
-            alert('Please enter a valid Firebase Realtime Database URL (e.g. https://your-project-default-rtdb.firebaseio.com)');
-            return;
-          }
-          const cleanUrl = rawUrl.replace(/\/+$/, '').replace(/\.json$/, '');
-          localStorage.setItem('pia-wall-cloud-url', cleanUrl);
-          updateCloudBadge();
-          closeCloudModal();
-          syncWithCloud();
-          alert('☁️ Cloud Sync Connected! All doodles will now sync across visitors worldwide.');
-        });
-      }
-
-      if (wallCloudDisconnectBtn) {
-        wallCloudDisconnectBtn.addEventListener('click', () => {
-          localStorage.removeItem('pia-wall-cloud-url');
-          if (wallCloudUrlInput) wallCloudUrlInput.value = '';
-          updateCloudBadge();
-          closeCloudModal();
-          alert('Switched back to local mode.');
-        });
-      }
-
-      // Initial wall render and cloud sync attempt
+      // Initial wall render
       renderWall();
-      syncWithCloud();
-
-      // Poll cloud for new community pins every 30 seconds
-      setInterval(syncWithCloud, 30000);
 
       // Owner Access button toggle handler
       if (wallOwnerBtn) {
@@ -1004,7 +851,6 @@
             try {
               localStorage.removeItem('pia-wall-pins');
             } catch (e) {}
-            resetCloudWall();
             renderWall();
             if (wallBroadcast) wallBroadcast.postMessage({ type: 'wall-updated' });
             if (status) status.textContent = 'The Wall has been reset to default pins by Owner.';
@@ -1061,9 +907,6 @@
 
           // Record this pin as created by THIS visitor
           addMyPinId(pinId);
-
-          // Push to global cloud if connected
-          pushPinToCloud(newPin);
 
           // Hide and reset the live preview card
           if (liveDoodleCard) {
