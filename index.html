@@ -980,11 +980,19 @@
               <h3 class="font-display wall-pinboard-title">
                 Pinned on <span class="display-italic wall-accent-word">The Wall</span>
               </h3>
-              <span class="meta-mono" id="wall-count-badge">5 PINS RECORDED</span>
+              <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; margin-top: 0.25rem;">
+                <span class="meta-mono" id="wall-count-badge">3 PINS RECORDED</span>
+                <span id="owner-status-badge" class="owner-status-pill" style="display: none;">👑 Owner Mode</span>
+              </div>
             </div>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <button id="reset-wall-btn" class="btn-miggs-secondary" type="button" title="Clear all custom pins and restore default wall">
+            <div class="wall-heading-actions" style="display: flex; gap: 0.5rem; align-items: center;">
+              <!-- Reset Wall: Only visible to Website Owner -->
+              <button id="reset-wall-btn" class="btn-miggs-secondary wall-owner-only" type="button" title="Clear all custom pins and restore default wall" style="display: none;">
                 <span>Reset Wall ↺</span>
+              </button>
+              <!-- Owner Access Toggle -->
+              <button id="wall-owner-btn" class="btn-miggs-secondary btn-owner-unlock" type="button" title="Website Owner Management" aria-label="Website owner moderation">
+                <span id="owner-btn-text">🔒 Owner Access</span>
               </button>
             </div>
           </div>

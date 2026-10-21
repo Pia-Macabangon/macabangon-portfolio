@@ -552,63 +552,95 @@
         if (status) status.textContent = 'Your sketch was saved to downloads.';
       }, 'image/png');
     });
+  } // End Section 9: Interactive Sketch Drawing Pad
 
-    /* ==========================================================================
-       10. The Wall (Pinning sketches & notes with LocalStorage persistence)
-       ========================================================================== */
+  /* ==========================================================================
+     10. The Wall (Pinning sketches & notes with LocalStorage & Owner Permissions)
+     ========================================================================== */
+  const initTheWall = () => {
     const wallContainer = document.querySelector('#wall-cards-container');
     const wallCountBadge = document.querySelector('#wall-count-badge');
     const pinBtn = document.querySelector('#pin-pad-btn');
     const authorInput = document.querySelector('#wall-author-name');
     const noteInput = document.querySelector('#wall-note-text');
+    const wallOwnerBtn = document.querySelector('#wall-owner-btn');
+    const ownerBtnText = document.querySelector('#owner-btn-text');
+    const ownerStatusBadge = document.querySelector('#owner-status-badge');
+    const resetWallBtn = document.querySelector('#reset-wall-btn');
+    const status = document.querySelector('.pad-status');
 
-    // Preset / community seed pins inspired by awrs.me/en/wall
+    // Preset seed pins (curated welcome & peer notes exclusively for Pia's portfolio)
     const defaultPins = [
       {
-        id: 'seed-1',
-        author: 'Luckless King',
+        id: 'seed-pia',
+        author: 'Pia Macabangon',
+        role: 'BS CpE Senior',
+        caption: 'Welcome to my engineering wall! Leave a doodle, a circuit sketch, or your greetings.',
+        date: 'Host Note',
+        theme: 'theme-burgundy',
+        drawingText: 'Welcome! ☕',
+        drawingBg: '#ffffff',
+        drawingColor: '#7a1c2c'
+      },
+      {
+        id: 'seed-peer',
+        author: 'Fellow Engineer',
         role: 'Visitor',
-        caption: 'trial for my portfolio i will copy this pin idea',
-        date: 'Oct 04, 2026',
+        caption: 'Great work on the dual-spooling printing kiosk and sensor telemetry!',
+        date: 'Recent',
         theme: 'theme-darkgreen',
-        drawingText: 'Great :)',
+        drawingText: 'Nice Capstone! 💡',
         drawingBg: '#ffffff',
         drawingColor: '#0b2f24'
       },
       {
-        id: 'seed-2',
-        author: 'Rabadiya Roshan',
-        role: 'Developer',
-        caption: 'Computer engineering at its best! Love the editorial style.',
-        date: 'Oct 03, 2026',
+        id: 'seed-iot',
+        author: 'Tech Visitor',
+        role: 'Visitor',
+        caption: 'The AquaSense Proteus telemetry simulation looks super clean.',
+        date: 'Recent',
         theme: 'theme-blue',
-        drawingText: 'Roshh!',
+        drawingText: 'AquaSense ⚡',
         drawingBg: '#000000',
-        drawingColor: '#ffffff'
-      },
-      {
-        id: 'seed-3',
-        author: 'Salah Ahmed',
-        role: 'Designer',
-        caption: 'ما شاء الله شغل ممتاز ، بالتوفيق',
-        date: 'Sep 30, 2026',
-        theme: 'theme-purple',
-        drawingHeart: true,
-        drawingBg: '#ffffff',
-        drawingColor: '#3b1b54'
-      },
-      {
-        id: 'seed-4',
-        author: 'Pia Macabangon',
-        role: 'BS CpE Senior',
-        caption: 'Welcome to my engineering wall! Leave a doodle or your greetings.',
-        date: 'Today',
-        theme: 'theme-burgundy',
-        drawingText: 'Pia ☕',
-        drawingBg: '#ffffff',
-        drawingColor: '#7a1c2c'
+        drawingColor: '#38bdf8'
       }
     ];
+
+    // Helper: IDs of pins created in this browser session/client
+    const getMyPinIds = () => {
+      try {
+        const stored = localStorage.getItem('pia-my-pins');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    };
+
+    const addMyPinId = (id) => {
+      try {
+        const ids = getMyPinIds();
+        if (!ids.includes(id)) {
+          ids.push(id);
+          localStorage.setItem('pia-my-pins', JSON.stringify(ids));
+        }
+      } catch (e) {}
+    };
+
+    const removeMyPinId = (id) => {
+      try {
+        const ids = getMyPinIds().filter(i => i !== id);
+        localStorage.setItem('pia-my-pins', JSON.stringify(ids));
+      } catch (e) {}
+    };
+
+    // Helper: Owner mode check
+    const isOwnerActive = () => {
+      try {
+        return localStorage.getItem('pia-is-owner') === 'true';
+      } catch (e) {
+        return false;
+      }
+    };
 
     const getStoredPins = () => {
       try {
@@ -624,14 +656,31 @@
     const renderWall = () => {
       if (!wallContainer) return;
       const pins = getStoredPins();
+      const myPinIds = getMyPinIds();
+      const isOwner = isOwnerActive();
+
       if (wallCountBadge) {
         wallCountBadge.textContent = `${pins.length} PIN${pins.length === 1 ? '' : 'S'} ON THE WALL`;
+      }
+
+      // Update Owner UI states
+      if (ownerStatusBadge) {
+        ownerStatusBadge.style.display = isOwner ? 'inline-flex' : 'none';
+      }
+      if (resetWallBtn) {
+        resetWallBtn.style.display = isOwner ? 'inline-flex' : 'none';
+      }
+      if (ownerBtnText) {
+        ownerBtnText.textContent = isOwner ? '🔓 Exit Owner' : '🔒 Owner Access';
       }
 
       wallContainer.innerHTML = '';
       pins.forEach((pin, index) => {
         const card = document.createElement('div');
         card.className = `wall-pin-card is-inview ${pin.theme || 'theme-slate'}`;
+
+        const isMyPin = myPinIds.includes(pin.id);
+        const canDelete = isOwner || isMyPin;
 
         let canvasContent = '';
         if (pin.image) {
@@ -650,8 +699,18 @@
 
         const initial = (pin.author || 'P').charAt(0).toUpperCase();
 
+        let deleteBtnHtml = '';
+        if (canDelete) {
+          const deleteTitle = isOwner && !isMyPin ? 'Owner Delete: Remove pin' : 'Delete your doodle';
+          const deleteClass = isOwner && !isMyPin ? 'owner-pin-delete' : 'my-pin-delete';
+          deleteBtnHtml = `<button class="wall-card-delete-btn ${deleteClass}" type="button" data-index="${index}" data-id="${pin.id}" title="${deleteTitle}">✕</button>`;
+        }
+
+        let myPinBadgeHtml = isMyPin ? `<span class="my-pin-tag">YOUR PIN</span>` : '';
+
         card.innerHTML = `
-          <button class="wall-card-delete-btn" type="button" data-index="${index}" title="Remove this pin">✕</button>
+          ${myPinBadgeHtml}
+          ${deleteBtnHtml}
           <div class="wall-card-canvas-box ${pin.drawingBg === '#000000' ? 'dark-slate' : ''}">
             ${canvasContent}
           </div>
@@ -668,41 +727,91 @@
         wallContainer.appendChild(card);
       });
 
-      // Attach delete click handlers
+      // Attach delete click handlers with proper confirmation
       wallContainer.querySelectorAll('.wall-card-delete-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           e.stopPropagation();
           const idx = parseInt(btn.dataset.index, 10);
+          const pinId = btn.dataset.id;
           const currentPins = getStoredPins();
-          currentPins.splice(idx, 1);
-          try {
-            localStorage.setItem('pia-wall-pins', JSON.stringify(currentPins));
-          } catch (err) {}
-          renderWall();
+          const targetPin = currentPins[idx];
+          if (!targetPin) return;
+
+          const isMyPin = myPinIds.includes(pinId);
+
+          let confirmMsg = 'Are you sure you want to delete your doodle from The Wall?';
+          if (isOwner && !isMyPin) {
+            confirmMsg = `Owner Moderation: Are you sure you want to remove the pin by "${targetPin.author || 'Visitor'}"?`;
+          }
+
+          if (window.confirm(confirmMsg)) {
+            currentPins.splice(idx, 1);
+            try {
+              localStorage.setItem('pia-wall-pins', JSON.stringify(currentPins));
+            } catch (err) {}
+            removeMyPinId(pinId);
+            renderWall();
+            if (status) status.textContent = isOwner && !isMyPin ? 'Pin removed by Owner.' : 'Your doodle was removed from The Wall.';
+          }
         });
       });
     };
 
     renderWall();
 
-    // Reset Wall button handler
-    document.querySelector('#reset-wall-btn')?.addEventListener('click', () => {
-      try {
-        localStorage.removeItem('pia-wall-pins');
-      } catch (e) {}
-      renderWall();
-      if (status) status.textContent = 'The Wall has been reset to default pins.';
-    });
+    // Owner Access Button toggle handler
+    if (wallOwnerBtn) {
+      wallOwnerBtn.addEventListener('click', () => {
+        if (isOwnerActive()) {
+          try {
+            localStorage.removeItem('pia-is-owner');
+          } catch (e) {}
+          renderWall();
+          if (status) status.textContent = 'Owner mode deactivated. Switched to visitor view.';
+        } else {
+          const pass = window.prompt('Enter Website Owner Passcode (for Pia):');
+          if (pass && (pass.trim().toLowerCase() === 'pia2026' || pass.trim().toLowerCase() === 'pia')) {
+            try {
+              localStorage.setItem('pia-is-owner', 'true');
+            } catch (e) {}
+            renderWall();
+            alert('👑 Owner Mode activated! You now have full moderation controls and can reset or delete any pin.');
+          } else if (pass !== null) {
+            alert('Incorrect passcode. Owner mode requires Pia\'s passcode.');
+          }
+        }
+      });
+    }
+
+    // Reset Wall button handler (Protected: Owner Only)
+    if (resetWallBtn) {
+      resetWallBtn.addEventListener('click', () => {
+        if (!isOwnerActive()) {
+          alert('Only the website owner can reset The Wall.');
+          return;
+        }
+        if (window.confirm('Owner Action: Are you sure you want to reset all pins to default? This will clear all visitor pins.')) {
+          try {
+            localStorage.removeItem('pia-wall-pins');
+          } catch (e) {}
+          renderWall();
+          if (status) status.textContent = 'The Wall has been reset to default pins by Owner.';
+        }
+      });
+    }
 
     if (pinBtn) {
       pinBtn.addEventListener('click', () => {
+        const pad = document.querySelector('#drawing-pad');
+        const padContext = pad?.getContext('2d');
+        const wrapper = pad?.parentElement;
         const author = authorInput?.value.trim() || 'Fellow Engineer';
         const note = noteInput?.value.trim() || 'Left a sketch on The Wall!';
-        const hasDrawing = wrapper.classList.contains('has-drawing');
+        const hasDrawing = wrapper ? wrapper.classList.contains('has-drawing') : false;
 
         let imageData = '';
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        if (hasDrawing) {
+        if (hasDrawing && pad && padContext) {
           const exportCanvas = document.createElement('canvas');
           exportCanvas.width = pad.width;
           exportCanvas.height = pad.height;
@@ -716,8 +825,10 @@
         const themes = ['theme-darkgreen', 'theme-blue', 'theme-purple', 'theme-burgundy', 'theme-slate'];
         const chosenTheme = themes[Math.floor(Math.random() * themes.length)];
 
+        const pinId = `pin-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
         const newPin = {
-          id: `pin-${Date.now()}`,
+          id: pinId,
           author: author,
           caption: note,
           date: 'Just now',
@@ -735,11 +846,18 @@
           localStorage.setItem('pia-wall-pins', JSON.stringify(existing));
         } catch (e) {}
 
+        // Record this pin as created by THIS visitor so only they can delete it
+        addMyPinId(pinId);
+
         renderWall();
 
         // Clear input and drawing slate
-        padContext.clearRect(0, 0, pad.width, pad.height);
-        wrapper.classList.remove('has-drawing');
+        if (padContext && pad) {
+          padContext.clearRect(0, 0, pad.width, pad.height);
+        }
+        if (wrapper) {
+          wrapper.classList.remove('has-drawing');
+        }
         if (authorInput) authorInput.value = '';
         if (noteInput) noteInput.value = '';
         if (status) status.textContent = '✨ Your sketch was successfully pinned on The Wall!';
@@ -754,7 +872,8 @@
         }, 150);
       });
     }
-  }
+  };
+  initTheWall();
 
   /* ==========================================================================
      11. Scroll-Triggered Hand-Drawn Sketch Animation Engine
