@@ -1163,13 +1163,64 @@
             <span class="pixel-online-dot" aria-hidden="true"></span>
           </div>
           <div>
-            <div class="pixel-chat-name">PiaBot <span class="pixel-chat-tag">AI // CpE // CHAT</span></div>
-            <div class="pixel-chat-status">ONLINE &bull; GENERAL KNOWLEDGE ACTIVE</div>
+            <div class="pixel-chat-name">PiaBot <span class="pixel-chat-tag">AI // CpE // UNLIMITED</span></div>
+            <div class="pixel-chat-status" id="pixel-chat-status">
+              <span class="pixel-status-badge" id="pixel-status-badge">⚡ SMART AI ACTIVE</span>
+            </div>
           </div>
         </div>
         <div class="pixel-chat-controls">
+          <button id="pixel-chat-settings-btn" class="pixel-chat-btn-icon" title="AI Engine Settings (Connect Gemini / ChatGPT)" type="button" aria-label="AI Engine Settings">⚙️</button>
           <button id="pixel-chat-clear" class="pixel-chat-btn-icon" title="Clear chat history" type="button" aria-label="Clear chat history">&#x21bb;</button>
           <button id="pixel-chat-close" class="pixel-chat-btn-icon" title="Close chat" type="button" aria-label="Close chat">&times;</button>
+        </div>
+      </div>
+
+      <!-- AI Engine Settings Drawer -->
+      <div class="pixel-chat-settings-drawer" id="pixel-chat-settings-drawer" aria-hidden="true">
+        <div class="pixel-drawer-header">
+          <div class="pixel-drawer-title-group">
+            <span class="pixel-drawer-icon">⚙️</span>
+            <div>
+              <div class="pixel-drawer-title">AI ENGINE CONFIGURATION</div>
+              <div class="pixel-drawer-subtitle">Connect Gemini / ChatGPT or use Built-in</div>
+            </div>
+          </div>
+          <button type="button" id="pixel-settings-drawer-close" class="pixel-drawer-close-btn" aria-label="Close settings">&times;</button>
+        </div>
+        <div class="pixel-drawer-content">
+          <p class="pixel-drawer-desc">
+            PiaBot can answer <strong>any question without limitations</strong> — coding, circuits, math, science, and life advice! Choose how you'd like PiaBot to think:
+          </p>
+
+          <div class="pixel-setting-row">
+            <label for="pixel-provider-select" class="pixel-setting-label">AI Engine Mode</label>
+            <select id="pixel-provider-select" class="pixel-form-select">
+              <option value="builtin">⚡ Smart Built-in Engine (Offline &bull; Zero Setup)</option>
+              <option value="gemini">🟢 Google Gemini 1.5 Flash (Free &bull; Cloud AI)</option>
+              <option value="openai">🤖 OpenAI ChatGPT (GPT-4o mini &bull; Cloud AI)</option>
+            </select>
+          </div>
+
+          <div class="pixel-setting-row" id="pixel-key-row" style="display: none;">
+            <label for="pixel-api-key-input" class="pixel-setting-label" id="pixel-key-label">API Key</label>
+            <div class="pixel-key-input-wrap">
+              <input type="password" id="pixel-api-key-input" class="pixel-form-input" placeholder="Paste your API key here..." autocomplete="off">
+              <button type="button" id="pixel-key-toggle-btn" class="pixel-key-eye-btn" title="Show/Hide Key">👁️</button>
+            </div>
+            <div class="pixel-key-help" id="pixel-key-help-gemini">
+              <span>👉 Get a <strong>100% Free</strong> Gemini API key in 30 seconds at </span><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio &nearr;</a>
+            </div>
+            <div class="pixel-key-help" id="pixel-key-help-openai" style="display: none;">
+              <span>👉 Get your OpenAI API key at </span><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com &nearr;</a>
+            </div>
+            <p class="pixel-privacy-note">🔒 <strong>Privacy First</strong>: Your API key is saved strictly in your browser's private local storage (localStorage) and never uploaded to GitHub or external servers.</p>
+          </div>
+
+          <div class="pixel-drawer-actions">
+            <button type="button" id="pixel-settings-save-btn" class="pixel-btn-primary">Save &amp; Activate</button>
+            <button type="button" id="pixel-settings-clear-btn" class="pixel-btn-secondary">Reset to Built-in</button>
+          </div>
         </div>
       </div>
 
@@ -1179,20 +1230,22 @@
       <!-- Quick Prompt Chips -->
       <div class="pixel-chat-chips" id="pixel-chat-chips">
         <button class="pixel-chip" type="button" data-prompt="Tell me about Pia">🎓 About Pia</button>
+        <button class="pixel-chip" type="button" data-prompt="Write a Python script for an automated sensor alert">🐍 Python IoT Code</button>
         <button class="pixel-chip" type="button" data-prompt="What is the difference between Arduino and Raspberry Pi?">⚡ Arduino vs Pi</button>
         <button class="pixel-chip" type="button" data-prompt="Tell me about the Printing Kiosk">🖨️ Capstone Kiosk</button>
-        <button class="pixel-chip" type="button" data-prompt="How do C++ pointers work?">💻 C++ Pointers</button>
+        <button class="pixel-chip" type="button" data-prompt="How do C++ pointers and memory management work?">💻 C++ Pointers</button>
+        <button class="pixel-chip" type="button" data-prompt="Explain Quantum Computing in simple terms">⚛️ Quantum Computing</button>
         <button class="pixel-chip" type="button" data-prompt="Tell me a programmer joke">🤖 Tell a Joke</button>
-        <button class="pixel-chip" type="button" data-prompt="What is Ohm's Law and how do I use it?">🔌 Ohm's Law</button>
-        <button class="pixel-chip" type="button" data-prompt="What is IoT?">🌐 What is IoT?</button>
+        <button class="pixel-chip" type="button" data-prompt="What is Ohm's Law and how do I calculate an LED resistor?">🔌 Ohm's Law</button>
+        <button class="pixel-chip" type="button" data-prompt="What is IoT and how does MQTT work?">🌐 What is IoT?</button>
+        <button class="pixel-chip" type="button" data-prompt="Calculate 25 * 18 + 140 / 4">🧮 Calculate Math</button>
         <button class="pixel-chip" type="button" data-prompt="Tell me about AquaSense">💧 AquaSense</button>
-        <button class="pixel-chip" type="button" data-prompt="What is Pia's technical stack?">🛠️ Tech Stack</button>
         <button class="pixel-chip" type="button" data-prompt="How can I contact Pia?">📬 Contact</button>
       </div>
 
       <!-- Chat Input Form -->
       <form class="pixel-chat-input-bar" id="pixel-chat-form">
-        <input type="text" id="pixel-chat-input" class="pixel-chat-input" placeholder="Ask anything: tech, coding, circuits, jokes, Pia..." maxlength="200" autocomplete="off">
+        <textarea id="pixel-chat-input" class="pixel-chat-input" placeholder="Ask anything: code, circuits, math, science, advice..." rows="1" maxlength="2500" autocomplete="off"></textarea>
         <button type="submit" class="pixel-chat-send" id="pixel-chat-send" title="Send message" aria-label="Send message">
           <span>SEND</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">

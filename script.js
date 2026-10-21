@@ -1167,8 +1167,8 @@
         }
       };
 
-      /* ==========================================================================
-         18b. Interactive Pixel Mascot Chatbot Terminal
+            /* ==========================================================================
+         18b. Interactive Pixel Mascot Chatbot Terminal (Unlimited AI Engine)
          ========================================================================== */
       const initPixelChatbot = (companionEl) => {
         const chatbotContainer = document.querySelector('#pixel-chatbot');
@@ -1177,16 +1177,37 @@
         const messagesEl = document.querySelector('#pixel-chat-messages');
         const formEl = document.querySelector('#pixel-chat-form');
         const inputEl = document.querySelector('#pixel-chat-input');
+        const sendBtn = document.querySelector('#pixel-chat-send');
         const clearBtn = document.querySelector('#pixel-chat-clear');
         const closeBtn = document.querySelector('#pixel-chat-close');
+        const settingsBtn = document.querySelector('#pixel-chat-settings-btn');
+        const statusBadge = document.querySelector('#pixel-status-badge');
         const chips = document.querySelectorAll('.pixel-chip');
 
+        // AI Engine Settings Drawer Elements
+        const settingsDrawer = document.querySelector('#pixel-chat-settings-drawer');
+        const drawerCloseBtn = document.querySelector('#pixel-settings-drawer-close');
+        const providerSelect = document.querySelector('#pixel-provider-select');
+        const keyRow = document.querySelector('#pixel-key-row');
+        const apiKeyInput = document.querySelector('#pixel-api-key-input');
+        const keyToggleBtn = document.querySelector('#pixel-key-toggle-btn');
+        const geminiHelp = document.querySelector('#pixel-key-help-gemini');
+        const openaiHelp = document.querySelector('#pixel-key-help-openai');
+        const saveSettingsBtn = document.querySelector('#pixel-settings-save-btn');
+        const clearSettingsBtn = document.querySelector('#pixel-settings-clear-btn');
+
         let hasGreeted = false;
+        let isGenerating = false;
+        const conversationHistory = []; // stores { role: 'user' | 'model', text: string }
+
+        // Persistent AI settings in localStorage
+        let currentProvider = localStorage.getItem('piabot_provider') || 'builtin';
+        let currentApiKey = localStorage.getItem('piabot_api_key') || '';
 
         const updateChatbotPosition = () => {
           if (!companionEl) return;
           const compRect = companionEl.getBoundingClientRect();
-          const chatWidth = 380;
+          const chatWidth = 410;
           const pad = 16;
           const winWidth = window.innerWidth;
 
@@ -1199,9 +1220,212 @@
           chatbotContainer.style.left = `${targetLeft}px`;
         };
 
+        const updateStatusBadge = () => {
+          if (!statusBadge) return;
+          if (currentProvider === 'gemini' && currentApiKey) {
+            statusBadge.className = 'pixel-status-badge gemini';
+            statusBadge.innerHTML = '🟢 GEMINI 1.5 ACTIVE';
+            statusBadge.title = 'Connected to Google Gemini 1.5 Flash (Click to configure)';
+          } else if (currentProvider === 'openai' && currentApiKey) {
+            statusBadge.className = 'pixel-status-badge openai';
+            statusBadge.innerHTML = '🟢 CHATGPT ACTIVE';
+            statusBadge.title = 'Connected to OpenAI GPT-4o-mini (Click to configure)';
+          } else {
+            statusBadge.className = 'pixel-status-badge builtin';
+            statusBadge.innerHTML = '⚡ SMART AI ACTIVE';
+            statusBadge.title = 'Smart Built-in Offline Engine (Click to connect Gemini for free)';
+          }
+        };
+
+        // Initialize status pill state
+        updateStatusBadge();
+
+        const updateDrawerFields = () => {
+          if (!providerSelect || !keyRow) return;
+          const val = providerSelect.value;
+          if (val === 'builtin') {
+            keyRow.style.display = 'none';
+          } else {
+            keyRow.style.display = 'flex';
+            if (val === 'gemini') {
+              if (geminiHelp) geminiHelp.style.display = 'block';
+              if (openaiHelp) openaiHelp.style.display = 'none';
+              if (apiKeyInput) apiKeyInput.placeholder = 'AIzaSy... (Paste Gemini API key)';
+            } else {
+              if (geminiHelp) geminiHelp.style.display = 'none';
+              if (openaiHelp) openaiHelp.style.display = 'block';
+              if (apiKeyInput) apiKeyInput.placeholder = 'sk-... (Paste OpenAI API key)';
+            }
+          }
+        };
+
+        const openDrawer = () => {
+          if (!settingsDrawer) return;
+          if (providerSelect) providerSelect.value = currentProvider;
+          if (apiKeyInput) apiKeyInput.value = currentApiKey;
+          updateDrawerFields();
+          settingsDrawer.classList.add('is-open');
+          settingsDrawer.setAttribute('aria-hidden', 'false');
+        };
+
+        const closeDrawer = () => {
+          if (!settingsDrawer) return;
+          settingsDrawer.classList.remove('is-open');
+          settingsDrawer.setAttribute('aria-hidden', 'true');
+        };
+
+        const toggleDrawer = () => {
+          if (!settingsDrawer) return;
+          if (settingsDrawer.classList.contains('is-open')) {
+            closeDrawer();
+          } else {
+            openDrawer();
+          }
+        };
+
+        // Drawer event listeners
+        if (settingsBtn) settingsBtn.addEventListener('click', toggleDrawer);
+        if (statusBadge) statusBadge.addEventListener('click', openDrawer);
+        if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeDrawer);
+
+        if (providerSelect) {
+          providerSelect.addEventListener('change', updateDrawerFields);
+        }
+
+        if (keyToggleBtn && apiKeyInput) {
+          keyToggleBtn.addEventListener('click', () => {
+            const isPassword = apiKeyInput.type === 'password';
+            apiKeyInput.type = isPassword ? 'text' : 'password';
+            keyToggleBtn.textContent = isPassword ? '🙈' : '👁️';
+          });
+        }
+
+        if (saveSettingsBtn) {
+          saveSettingsBtn.addEventListener('click', () => {
+            const chosenProvider = providerSelect ? providerSelect.value : 'builtin';
+            const enteredKey = apiKeyInput ? apiKeyInput.value.trim() : '';
+
+            if ((chosenProvider === 'gemini' || chosenProvider === 'openai') && !enteredKey) {
+              if (apiKeyInput) {
+                apiKeyInput.focus();
+                apiKeyInput.style.borderColor = '#ef4444';
+                setTimeout(() => { apiKeyInput.style.borderColor = ''; }, 2000);
+              }
+              alert(`Please paste your ${chosenProvider === 'gemini' ? 'Google Gemini' : 'OpenAI'} API key, or choose the Built-in Engine.`);
+              return;
+            }
+
+            currentProvider = chosenProvider;
+            currentApiKey = enteredKey;
+            localStorage.setItem('piabot_provider', currentProvider);
+            localStorage.setItem('piabot_api_key', currentApiKey);
+
+            updateStatusBadge();
+            closeDrawer();
+
+            const providerLabel = currentProvider === 'gemini' ? 'Google Gemini 1.5 Flash' :
+                                  currentProvider === 'openai' ? 'OpenAI ChatGPT (GPT-4o-mini)' :
+                                  'Smart Built-in Offline Engine';
+
+            appendMessage('bot', `⚙️ <em>AI Engine active: <strong>${providerLabel}</strong>! Ask me anything without limitations!</em>`);
+          });
+        }
+
+        if (clearSettingsBtn) {
+          clearSettingsBtn.addEventListener('click', () => {
+            currentProvider = 'builtin';
+            currentApiKey = '';
+            localStorage.removeItem('piabot_provider');
+            localStorage.removeItem('piabot_api_key');
+            if (providerSelect) providerSelect.value = 'builtin';
+            if (apiKeyInput) apiKeyInput.value = '';
+            updateDrawerFields();
+            updateStatusBadge();
+            closeDrawer();
+            appendMessage('bot', `⚡ <em>Switched back to <strong>Smart Built-in Engine</strong>. Ready for your questions!</em>`);
+          });
+        }
+
         const getTimeString = () => {
           const now = new Date();
           return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        };
+
+        const escapeHtml = (str) => {
+          if (!str) return '';
+          return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        };
+
+        /* Markdown & Code Block Formatter */
+        const formatMarkdown = (rawText) => {
+          if (!rawText) return '';
+
+          // If text already has pre-rendered safe HTML tags from local KB (e.g. <strong>, <code>, <a>, <ul>),
+          // preserve them while still checking for markdown code fences.
+          const hasExistingHtml = /<(?:strong|em|code|pre|a|ul|ol|li|br|blockquote|span|div)\b/i.test(rawText);
+
+          // 1. Extract and store code blocks ```lang ... ```
+          const codeBlocks = [];
+          let text = rawText.replace(/```([a-zA-Z0-9_\-\.\+#]*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+            const placeholder = `__PIXEL_CODE_BLOCK_${codeBlocks.length}__`;
+            const cleanLang = (lang || 'CODE').toUpperCase();
+            const cleanCode = code.replace(/^\n+|\n+$/g, '');
+            const escapedCode = escapeHtml(cleanCode);
+
+            const blockHtml = `
+              <div class="pixel-code-wrap">
+                <span class="pixel-code-lang-tag">${cleanLang}</span>
+                <button type="button" class="pixel-code-copy-btn" title="Copy code snippet">Copy</button>
+                <pre><code>${escapedCode}</code></pre>
+              </div>
+            `.trim();
+            codeBlocks.push(blockHtml);
+            return placeholder;
+          });
+
+          if (!hasExistingHtml) {
+            // Escape pure text to prevent XSS
+            text = escapeHtml(text);
+          }
+
+          // 2. Format inline code: `code`
+          text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+          // 3. Format bold: **text**
+          text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+          // 4. Format italic: *text* (avoiding bullet points)
+          text = text.replace(/(^|[^\*])\*([^\*\n]+)\*([^\*]|$)/g, '$1<em>$2</em>$3');
+
+          // 5. Format markdown links: [label](url)
+          text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1 &nearr;</a>');
+
+          // 6. Format blockquotes: > quote
+          text = text.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+
+          // 7. Format bullet lists: - item or * item
+          text = text.replace(/^\s*[\-\*]\s+(.+)$/gm, '<li>$1</li>');
+          text = text.replace(/((?:<li>.*<\/li>\s*)+)/g, '<ul>$1</ul>');
+
+          // 8. Format numbered lists: 1. item
+          text = text.replace(/^\s*(\d+)\.\s+(.+)$/gm, '<oli>$2</oli>');
+          text = text.replace(/((?:<oli>.*<\/oli>\s*)+)/g, (m) => '<ol>' + m.replace(/<\/?oli>/g, tag => tag === '<oli>' ? '<li>' : '</li>') + '</ol>');
+
+          // 9. Format paragraph breaks and newlines
+          text = text.replace(/\n{2,}/g, '<br><br>');
+          text = text.replace(/\n/g, '<br>');
+
+          // 10. Restore code blocks
+          codeBlocks.forEach((block, idx) => {
+            text = text.replace(`__PIXEL_CODE_BLOCK_${idx}__`, block);
+          });
+
+          return text;
         };
 
         const appendMessage = (sender, textHtml) => {
@@ -1239,7 +1463,91 @@
           return ind;
         };
 
-        /* Jokes collection */
+        // Clipboard copy handler for code blocks
+        if (messagesEl) {
+          messagesEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('.pixel-code-copy-btn');
+            if (!btn) return;
+            const codeBlock = btn.parentElement ? btn.parentElement.querySelector('pre code') : null;
+            if (!codeBlock) return;
+            const textToCopy = codeBlock.textContent || '';
+            navigator.clipboard.writeText(textToCopy).then(() => {
+              const origText = btn.textContent;
+              btn.textContent = '✓ Copied!';
+              btn.classList.add('copied');
+              setTimeout(() => {
+                btn.textContent = origText;
+                btn.classList.remove('copied');
+              }, 2000);
+            }).catch(() => {
+              btn.textContent = 'Failed';
+            });
+          });
+        }
+
+        /* Safe Arithmetic & Base Evaluator */
+        const tryEvaluateMath = (str) => {
+          const cleaned = str
+            .replace(/^(?:calculate|compute|solve|eval|what is|what's|how much is)\s+/i, '')
+            .replace(/[\?\=]/g, '')
+            .trim();
+
+          // Percentage: "25% of 600"
+          const pctMatch = cleaned.match(/^(\d+(?:\.\d+)?)\s*(?:%|percent)\s+(?:of\s+)?(\d+(?:\.\d+)?)$/i);
+          if (pctMatch) {
+            const pct = parseFloat(pctMatch[1]);
+            const total = parseFloat(pctMatch[2]);
+            const ans = (pct / 100) * total;
+            return `🧮 <strong>Percentage Result</strong>:<br><code>${pct}% of ${total}</code> = <strong>${Math.round(ans * 100000) / 100000}</strong>`;
+          }
+
+          // Base conversions:
+          const binMatch = str.match(/convert\s+(\d+)\s+to\s+bin(?:ary)?/i);
+          if (binMatch) {
+            const num = parseInt(binMatch[1], 10);
+            return `🔢 <strong>Base Conversion</strong>:<br>Decimal <code>${num}</code> = <strong><code>0b${num.toString(2)}</code></strong> in binary!`;
+          }
+          const hexMatch = str.match(/convert\s+(?:0x)?([0-9a-fA-F]+)\s+to\s+dec(?:imal)?/i);
+          if (hexMatch) {
+            const num = parseInt(hexMatch[1], 16);
+            return `🔢 <strong>Base Conversion</strong>:<br>Hex <code>0x${hexMatch[1].toUpperCase()}</code> = <strong>${num}</strong> in decimal!`;
+          }
+          const binToDecMatch = str.match(/convert\s+([01]{2,})\s+to\s+dec(?:imal)?/i);
+          if (binToDecMatch) {
+            const num = parseInt(binToDecMatch[1], 2);
+            return `🔢 <strong>Base Conversion</strong>:<br>Binary <code>${binToDecMatch[1]}</code> = <strong>${num}</strong> in decimal!`;
+          }
+
+          // General arithmetic
+          if (!/^[\d\.\s\+\-\*\/\%\^\(\)\,a-z]+$/i.test(cleaned)) return null;
+          if (!/\d/.test(cleaned) || !/[\+\-\*\/\%\^]|sqrt|sin|cos|tan|log|abs|pi|e/i.test(cleaned)) return null;
+
+          try {
+            let expr = cleaned
+              .replace(/\^/g, '**')
+              .replace(/\bsqrt\s*\(/gi, 'Math.sqrt(')
+              .replace(/\bsin\s*\(/gi, 'Math.sin(')
+              .replace(/\bcos\s*\(/gi, 'Math.cos(')
+              .replace(/\btan\s*\(/gi, 'Math.tan(')
+              .replace(/\blog\s*\(/gi, 'Math.log10(')
+              .replace(/\bln\s*\(/gi, 'Math.log(')
+              .replace(/\babs\s*\(/gi, 'Math.abs(')
+              .replace(/\bpi\b/gi, 'Math.PI')
+              .replace(/\be\b/gi, 'Math.E');
+
+            if (!/^[0-9\.\s\+\-\*\/\%\(\)\,\*\w]+$/.test(expr)) return null;
+            if (/(?:process|window|document|constructor|global|eval|Function|fetch|xml|proto)/i.test(expr)) return null;
+
+            const val = Function(`'use strict'; return (${expr})`)();
+            if (typeof val === 'number' && !isNaN(val) && isFinite(val)) {
+              const rounded = Math.round(val * 1000000) / 1000000;
+              return `🧮 <strong>Math Result</strong>:<br><code>${escapeHtml(cleaned)}</code> = <strong>${rounded}</strong>`;
+            }
+          } catch (e) {}
+          return null;
+        };
+
+        /* Tech Jokes & Riddles Collections */
         const techJokes = [
           "Why do programmers prefer dark mode? Because light attracts bugs! 🐛",
           "There are 10 types of people in the world: those who understand binary, and those who don't! 🤓",
@@ -1250,59 +1558,38 @@
           "Why was the JavaScript developer sad? Because they didn't know how to 'null' their feelings! 😂",
           "What is an algorithm? A word used by programmers when they don't want to explain what they did! 🧠",
           "There is no place like <code>127.0.0.1</code>! 🏠",
-          "Why do C++ developers wear glasses? Because they can't C#! 👓"
+          "Why do C++ developers wear glasses? Because they can't C#! 👓",
+          "How many programmers does it take to change a lightbulb? None, that's a hardware problem! 💡",
+          "Real programmers count from 0! 0️⃣"
         ];
 
-        /* Riddles collection */
         const techRiddles = [
           "🧩 <strong>Riddle</strong>: I have keys but no locks. I have space but no rooms. You can enter, but you can never leave. What am I?<br><br>👉 <em>Answer: A computer keyboard!</em> ⌨️",
-          "🧩 <strong>Riddle</strong>: I am always running, but I have no legs. I execute instructions, but I have no hands. What am I?<br><br>👉 <em>Answer: A CPU (or a computer program)!</em> 💻",
-          "🧩 <strong>Riddle</strong>: I connect billions of minds, hold the world's knowledge, and crash when an undersea cable gets bitten by a shark. What am I?<br><br>👉 <em>Answer: The Internet!</em> 🌐"
+          "🧩 <strong>Riddle</strong>: I am always running, but I have no legs. I execute instructions, but I have no hands. What am I?<br><br>👉 <em>Answer: A CPU (or a program)!</em> 💻",
+          "🧩 <strong>Riddle</strong>: I connect billions of minds, hold the world's knowledge, and crash when an undersea cable gets bitten by a shark. What am I?<br><br>👉 <em>Answer: The Internet!</em> 🌐",
+          "🧩 <strong>Riddle</strong>: I can be public or private, open or closed, but I am best when I have zero merge conflicts. What am I?<br><br>👉 <em>Answer: A Git repository!</em> 🐙"
         ];
 
         const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-        /* Safe Arithmetic Evaluator */
-        const tryEvaluateMath = (str) => {
-          const cleaned = str
-            .replace(/^(?:calculate|compute|solve|what is|what's|how much is)\s+/i, '')
-            .replace(/[\?\=]/g, '')
-            .trim();
-
-          // Only accept digits, valid arithmetic symbols, and parentheses
-          if (!/^[\d\.\s\+\-\*\/\%\^\(\)]+$/.test(cleaned)) return null;
-          if (!/\d/.test(cleaned) || !/[\+\-\*\/\%\^]/.test(cleaned)) return null;
-
-          try {
-            const expr = cleaned.replace(/\^/g, '**');
-            // Safe evaluation of mathematical token expression
-            const val = Function(`'use strict'; return (${expr})`)();
-            if (typeof val === 'number' && !isNaN(val) && isFinite(val)) {
-              const rounded = Math.round(val * 100000) / 100000;
-              return `🧮 <strong>Math Result</strong>:<br><code>${cleaned}</code> = <strong>${rounded}</strong>`;
-            }
-          } catch (e) {}
-          return null;
-        };
-
-        /* Extensive Knowledge Base: Portfolio, Computer Engineering, Software, Science, Chit-Chat */
+        /* Universal Built-in Knowledge Base */
         const knowledgeBase = [
-          /* --- Pia's Specific Portfolio & Projects --- */
+          /* --- Pia Nicole Macabangon Specifics --- */
           {
             patterns: [/who are you/i, /your name/i, /piabot/i, /what are you/i, /mascot/i],
-            response: "I'm <strong>PiaBot</strong>! Pia's 8-bit AI assistant & mascot companion. You can ask me <strong>anything</strong> — computer engineering, C++, IoT, coding questions, tech advice, jokes, or Pia's projects!"
+            response: "I'm <strong>PiaBot</strong>! Pia Nicole Macabangon's AI mascot companion. You can ask me <strong>anything without limits</strong> — coding, computer engineering, math, science, advice, jokes, or Pia's projects. You can also connect free <strong>Google Gemini 1.5</strong> via the ⚙️ settings button above for live cloud intelligence!"
           },
           {
             patterns: [/about pia/i, /who is pia/i, /bio/i, /introduce/i, /background/i, /profile/i],
-            response: "🎓 <strong>Pia Nicole Macabangon</strong> is a Computer Engineering student at ICCT Colleges with specialized focus on <strong>embedded systems, C/C++, IoT telemetry, and microcontroller architecture</strong> (Raspberry Pi, Arduino, ESP32)."
+            response: "🎓 <strong>Pia Nicole Macabangon</strong> is a Computer Engineering student (BSCpE) at <strong>ICCT Colleges Foundation Inc.</strong> with specialized expertise in <strong>embedded systems, C/C++, IoT telemetry, and microcontroller architecture</strong> (Raspberry Pi, Arduino, ESP32)."
           },
           {
             patterns: [/kiosk/i, /capstone/i, /printer/i, /printing/i, /spool/i, /epson/i, /nema/i, /coin validator/i],
-            response: "🖨️ <strong>Multi-Spool Automated Printing Kiosk</strong> (Capstone):<br>• <strong>Core Controller</strong>: Raspberry Pi 4 running Linux spool daemon.<br>• <strong>Dual Spoolers</strong>: Dual Epson L121 printers for instant Letter (Short) and Legal (Long) paper switching.<br>• <strong>Hardware Integration</strong>: NEMA 17 stepper paper dispenser & multi-coin validator with interrupt-driven pulse counting.<br>• <strong>Impact</strong>: Eliminates manual paper re-feeding and streamlines campus printing!"
+            response: "🖨️ <strong>Multi-Spool Automated Printing Kiosk</strong> (Capstone Project):<br>• <strong>Core Controller</strong>: Raspberry Pi 4 running a custom Linux print spool daemon.<br>• <strong>Dual Spoolers</strong>: Dual Epson L121 printers allowing instant switching between Short (Letter) and Long (Legal) paper with zero manual tray intervention.<br>• <strong>Hardware Integration</strong>: NEMA 17 stepper paper dispenser and multi-coin validator with interrupt-driven pulse counting.<br>• <strong>Impact</strong>: Eliminates campus printing bottlenecks!"
           },
           {
-            patterns: [/aquasense/i, /water/i, /turbidity/i, /tds/i, /ph/i, /proteus/i, /telemetry/i],
-            response: "💧 <strong>AquaSense Water Quality Monitor</strong>:<br>• Real-time Proteus VSM telemetry and IoT simulation powered by <strong>Arduino Uno</strong>.<br>• Integrates analog sensors for <strong>pH, Turbidity, and TDS</strong>.<br>• Features an I2C OLED display, threshold alarm relays, and serial telemetry logging."
+            patterns: [/aquasense/i, /water/i, /turbidity/i, /tds/i, /ph sensor/i, /proteus/i, /telemetry/i],
+            response: "💧 <strong>AquaSense Water Quality Monitor</strong>:<br>• Real-time Proteus VSM telemetry and IoT simulation powered by <strong>Arduino Uno</strong>.<br>• Integrates analog sensors for <strong>pH, Turbidity, and Total Dissolved Solids (TDS)</strong>.<br>• Features an I2C OLED display, threshold alarm relays, and serial telemetry logging."
           },
           {
             patterns: [/stockalert/i, /inventory/i, /rbac/i, /sha-?256/i],
@@ -1313,24 +1600,54 @@
             response: "🛠️ <strong>Pia's Technical Stack</strong>:<br>• <strong>Languages</strong>: C++, Embedded C, Python, Java, SQL, HTML/CSS/JS<br>• <strong>Hardware & IoT</strong>: Raspberry Pi 4, Arduino Uno/Mega, ESP32, NEMA 17 Steppers, Sensors (pH, TDS, Ultrasonic)<br>• <strong>Simulation & Tools</strong>: Proteus VSM, Multisim, Git/GitHub, Linux/Raspbian"
           },
           {
-            patterns: [/cert/i, /certificate/i, /credentials/i, /nc\s*ii/i, /fontanilla/i, /bioinformatics/i, /icpep/i, /ieee/i],
-            response: "📜 <strong>Key Credentials & Certifications</strong>:<br>• Computer Hardware Servicing <strong>NC II</strong> Certified<br>• <strong>ICPEP</strong> (Institute of Computer Engineers of the Philippines) Active Member<br>• Bioinformatics & Python Workshop with <strong>Dr. Fontanilla</strong><br>• Embedded Systems, IoT, and Network Security seminar citations."
+            patterns: [/cert/i, /certificate/i, /credentials/i, /nc\s*ii/i, /fontanilla/i, /bioinformatics/i, /icpep/i],
+            response: "📜 <strong>Credentials & Certifications</strong>:<br>• Computer Hardware Servicing <strong>NC II</strong> Certified<br>• <strong>ICPEP</strong> (Institute of Computer Engineers of the Philippines) Active Member<br>• Bioinformatics & Python Workshop with <strong>Dr. Fontanilla</strong><br>• Embedded Systems, IoT, and Network Security seminar citations."
           },
           {
             patterns: [/contact/i, /email/i, /hire/i, /reach/i, /social/i, /linkedin/i, /github/i],
             response: "📬 <strong>Connect with Pia</strong>:<br>• <strong>Email</strong>: <a href='mailto:piamacabangon@gmail.com' target='_blank'>piamacabangon@gmail.com</a><br>• <strong>LinkedIn</strong>: <a href='https://linkedin.com/in/pia-macabangon' target='_blank' rel='noopener'>linkedin.com/in/pia-macabangon</a><br>• <strong>GitHub</strong>: <a href='https://github.com/Pia-Macabangon' target='_blank' rel='noopener'>github.com/Pia-Macabangon</a><br>• Or leave a doodle on <strong>The Wall</strong> below!"
           },
           {
-            patterns: [/school/i, /education/i, /college/i, /icct/i, /degree/i, /cpe\b/i, /university/i],
+            patterns: [/school/i, /education/i, /college/i, /icct/i, /degree/i, /cpe\b/i],
             response: "🎓 <strong>Education & Degree</strong>:<br>• Bachelor of Science in <strong>Computer Engineering (BSCpE)</strong><br>• <strong>ICCT Colleges Foundation Inc.</strong><br>• Coursework: Embedded Systems, Microcontroller Architecture, Operating Systems, Computer Networks & Robotics."
           },
           {
-            patterns: [/wall/i, /guestbook/i, /doodle/i, /draw/i, /sign/i],
-            response: "🎨 <strong>The Wall</strong> is Pia's interactive guestbook! Scroll down to the bottom section and draw a doodle, signature, or message with your mouse or finger!"
+            patterns: [/wall/i, /guestbook/i, /doodle/i, /pin\b/i],
+            response: "🎨 <strong>The Wall</strong> is Pia's interactive guestbook! Scroll down to the bottom section to draw a doodle, signature, or message. Visitors can freely draw and delete their own doodles, while Pia can moderate via Owner Mode!"
+          },
+
+          /* --- Programming & Software Development --- */
+          {
+            patterns: [/python.*code|python.*script|write.*python/i],
+            response: "🐍 <strong>Python Sensor Monitor Example</strong>:\n```python\nimport time\nimport random\n\ndef read_sensor():\n    # Simulate ADC sensor reading (e.g. pH or Turbidity)\n    return round(random.uniform(6.5, 8.5), 2)\n\ndef monitor_system(threshold=7.5):\n    print(\"Starting IoT Telemetry Monitor...\")\n    while True:\n        val = read_sensor()\n        if val > threshold:\n            print(f\"⚠️ ALERT: High reading detected -> {val}\")\n        else:\n            print(f\"✅ Normal status -> {val}\")\n        time.sleep(2)\n\nif __name__ == '__main__':\n    monitor_system()\n```\nYou can adapt this for Arduino serial telemetry or Raspberry Pi GPIO!"
           },
           {
-            patterns: [/resume/i, /cv\b/i, /download resume/i],
-            response: "📄 You can explore Pia's full background and verified projects right here on this site, or request an official PDF copy directly via email at <a href='mailto:piamacabangon@gmail.com'>piamacabangon@gmail.com</a>!"
+            patterns: [/pointer/i, /c\+\+ pointer/i, /memory address/i, /dereference/i],
+            response: "💻 <strong>C++ Pointers & Memory</strong>:\n• A pointer stores the memory address of another variable:\n```cpp\nint value = 42;\nint* ptr = &value; // ptr stores address of value\n*ptr = 100;        // dereference ptr to modify value\n```\n• In embedded systems, pointers allow direct memory-mapped I/O manipulation (e.g. `*PORTB |= (1 << 5)` to toggle LED pin)."
+          },
+          {
+            patterns: [/bitwise|bit manipulation|shift bit|register mask/i],
+            response: "⚙️ <strong>Bitwise Operations in Embedded C</strong>:\n```c\n// Set bit 5 HIGH\nPORTB |= (1 << 5);\n\n// Clear bit 5 LOW\nPORTB &= ~(1 << 5);\n\n// Toggle bit 5\nPORTB ^= (1 << 5);\n\n// Read bit 5\nbool isSet = (PINB & (1 << 5)) != 0;\n```\nEssential for bare-metal microcontroller register programming without overwriting adjacent pins!"
+          },
+          {
+            patterns: [/oop\b|object-?oriented|encapsulation|polymorphism/i],
+            response: "🧱 <strong>The 4 Pillars of OOP</strong>:<br>1. <strong>Encapsulation</strong>: Bundling data and methods together with private/protected access modifiers.<br>2. <strong>Abstraction</strong>: Exposing clean interfaces while hiding complex internal implementations.<br>3. <strong>Inheritance</strong>: Creating new classes that inherit properties and methods from parent classes.<br>4. <strong>Polymorphism</strong>: Allowing different classes to be treated through a unified interface (virtual functions & method overriding)!"
+          },
+          {
+            patterns: [/data structure|big-?o|algorithm|complexity/i],
+            response: "📊 <strong>Data Structures & Big-O Time Complexity</strong>:<br>• <strong>Array / Vector</strong>: O(1) random access, O(n) insert/delete.<br>• <strong>Hash Table / Map</strong>: O(1) average lookup, insert, delete.<br>• <strong>Linked List</strong>: O(1) insert at head, O(n) traversal.<br>• <strong>Binary Search Tree</strong>: O(log n) search when balanced.<br>• <strong>Sorting</strong>: Quicksort and Mergesort achieve O(n log n) average performance."
+          },
+          {
+            patterns: [/sql\b|database|join\b|query/i],
+            response: "🗄️ <strong>SQL Essentials</strong>:\n```sql\n-- Retrieve high-priority inventory reorders\nSELECT item_name, current_stock, minimum_stock\nFROM inventory\nWHERE current_stock <= minimum_stock\nORDER BY current_stock ASC;\n\n-- Relational INNER JOIN\nSELECT o.order_id, u.username, o.amount\nFROM orders o\nINNER JOIN users u ON o.user_id = u.id;\n```"
+          },
+          {
+            patterns: [/git\b|github\b|version control/i],
+            response: "🐙 <strong>Git Cheat Sheet</strong>:\n```bash\ngit init                    # Initialize new local repo\ngit add .                   # Stage all modified files\ngit commit -m 'feat: ...'   # Snapshot staged changes\ngit push origin main        # Upload to remote repository\ngit checkout -b feature     # Create and switch to new branch\ngit merge feature           # Merge feature into current branch\n```"
+          },
+          {
+            patterns: [/linux\b|bash\b|shell command/i],
+            response: "🐧 <strong>Linux & Bash Essentials</strong>:\n```bash\nls -la                      # List files with permissions & hidden files\ngrep -rn 'search_term' .   # Search text recursively\nchmod +x script.sh          # Grant execution permissions\nsudo systemctl restart app  # Restart background daemon\nhtop                        # Interactive process & memory monitor\n```"
           },
 
           /* --- Computer Engineering & Hardware Concepts --- */
@@ -1352,7 +1669,7 @@
           },
           {
             patterns: [/ohm'?s law/i, /voltage.*current.*resistance/i, /v\s*=\s*i\s*r/i],
-            response: "🔌 <strong>Ohm's Law</strong>: <code>V = I × R</code><br>• <strong>V</strong>: Voltage (Volts)<br>• <strong>I</strong>: Current (Amperes)<br>• <strong>R</strong>: Resistance (Ohms)<br>• Electrical Power: <code>P = V × I = I² × R</code><br>💡 <em>Example</em>: Sizing an LED resistor: <code>R = (V_source - V_led) / I_led</code>. For 5V source, 2V LED, 20mA: <code>(5 - 2) / 0.02 = 150Ω</code>!"
+            response: "🔌 <strong>Ohm's Law</strong>: <code>V = I × R</code><br>• <strong>V</strong>: Voltage (Volts)<br>• <strong>I</strong>: Current (Amperes)<br>• <strong>R</strong>: Resistance (Ohms)<br>• Electrical Power: <code>P = V × I = I² × R</code><br>💡 <em>LED Resistor Calculation</em>: <code>R = (V_supply - V_led) / I_led</code>.<br>Example: For 5V supply, 2V red LED, 20mA current: <code>(5 - 2) / 0.02 = 150Ω</code>!"
           },
           {
             patterns: [/logic gate/i, /nand|nor|xor|flip-?flop/i, /boolean logic/i],
@@ -1363,57 +1680,11 @@
             response: "🌊 <strong>Pulse Width Modulation (PWM)</strong>:<br>A technique to simulate analog output from a digital pin by rapidly toggling between HIGH and LOW at varying <strong>Duty Cycles</strong>:<br>• <strong>0% Duty</strong> = Constant 0V<br>• <strong>50% Duty</strong> = Average 2.5V (on 5V pin)<br>• <strong>100% Duty</strong> = Constant 5V<br>Used for dimming LEDs, controlling servo angles, and regulating DC motor speeds!"
           },
           {
-            patterns: [/op-?amp|operational amplifier/i],
-            response: "📈 <strong>Operational Amplifiers (Op-Amps)</strong>:<br>High-gain differential voltage amplifiers used in analog signal conditioning.<br>• Ideal Op-Amp: Infinite input impedance, zero output impedance, infinite open-loop gain.<br>• Key configurations: Inverting amplifier, Non-inverting amplifier, Voltage follower (buffer), and Comparators."
-          },
-          {
-            patterns: [/ac vs dc|alternating current|direct current/i],
-            response: "⚡ <strong>AC vs. DC</strong>:<br>• <strong>DC (Direct Current)</strong>: Flows in one constant direction (batteries, microcontrollers, solar cells).<br>• <strong>AC (Alternating Current)</strong>: Periodically reverses direction (wall outlets, grid power). Preferred for long-distance power transmission because transformers can easily step voltages up and down to minimize resistive losses!"
-          },
-          {
-            patterns: [/ram vs rom|difference.*ram.*rom/i],
-            response: "💾 <strong>RAM vs. ROM</strong>:<br>• <strong>RAM (Random Access Memory)</strong>: Fast, volatile read/write memory. Loses its data when power is disconnected (SRAM, DRAM).<br>• <strong>ROM (Read-Only Memory)</strong>: Non-volatile memory that retains firmware and bootloaders even when powered off (EEPROM, Flash memory)."
-          },
-          {
-            patterns: [/8086|cpu architecture|von neumann|harvard/i],
-            response: "🖥️ <strong>Computer Architecture</strong>:<br>• <strong>Von Neumann</strong>: Single shared bus & memory for both instructions and data.<br>• <strong>Harvard</strong>: Physically separated memory and buses for instructions vs. data (common in microcontrollers like AVR/Arduino).<br>• <strong>Intel 8086</strong>: The historic 16-bit microprocessor (1978) that originated the x86 architecture still powering modern PCs today!"
+            patterns: [/transistor|bjt|mosfet/i],
+            response: "⚡ <strong>Transistors: BJT vs. MOSFET</strong>:<br>• <strong>BJT (Bipolar Junction Transistor)</strong>: Current-controlled device (Base current controls Collector-Emitter current). Great for analog audio amplification.<br>• <strong>MOSFET (Metal-Oxide-Semiconductor FET)</strong>: Voltage-controlled device (Gate voltage controls Drain-Source channel). Extremely high input impedance, low heat dissipation, and ideal for high-speed digital switching and power electronics!"
           },
 
-          /* --- Programming & Software Engineering --- */
-          {
-            patterns: [/pointer/i, /c\+\+ pointer/i, /memory address/i, /dereference/i],
-            response: "💻 <strong>C++ Pointers & Memory</strong>:<br>• A <strong>pointer</strong> (<code>int* ptr = &val;</code>) holds the memory address of another variable.<br>• The <code>*</code> operator dereferences the pointer to access or modify the value at that address.<br>• Essential in embedded systems for memory-mapped I/O registers (e.g. <code>*PORTB |= (1 << 5);</code> to turn on a pin)!"
-          },
-          {
-            patterns: [/oop\b|object-?oriented|encapsulation|polymorphism/i],
-            response: "🧱 <strong>The 4 Pillars of OOP</strong>:<br>1. <strong>Encapsulation</strong>: Bundling data and methods into classes with private/public access controls.<br>2. <strong>Abstraction</strong>: Hiding internal complexity behind clean public interfaces.<br>3. <strong>Inheritance</strong>: Reusing and extending base class code in derived classes.<br>4. <strong>Polymorphism</strong>: Allowing objects to be treated as instances of their parent class (function overloading & virtual methods)!"
-          },
-          {
-            patterns: [/data structure|big-?o|algorithm/i],
-            response: "📊 <strong>Data Structures & Complexity</strong>:<br>• <strong>Arrays / Vectors</strong>: O(1) random access, O(n) insert/delete.<br>• <strong>Linked Lists</strong>: O(1) insert at head, O(n) lookup.<br>• <strong>Hash Tables</strong>: O(1) average lookup, insertion, and deletion.<br>• <strong>Binary Search Trees</strong>: O(log n) balanced operations.<br>• <strong>Big-O</strong> measures how runtime or space scales as input size (n) grows!"
-          },
-          {
-            patterns: [/git\b|github\b|version control/i],
-            response: "🐙 <strong>Git & Version Control</strong>:<br>• <code>git init</code>: Create local repository.<br>• <code>git add .</code> & <code>git commit -m 'feat: ...'</code>: Snapshot changes.<br>• <code>git push origin main</code>: Upload to remote hosting like GitHub.<br>• <code>git branch</code> & <code>git merge</code>: Work in isolated feature branches without breaking main!"
-          },
-          {
-            patterns: [/linux\b|bash\b|shell command/i],
-            response: "🐧 <strong>Linux Essentials</strong>:<br>• <code>ls -la</code>: List all files with permissions.<br>• <code>cd &lt;dir&gt;</code>: Change directory.<br>• <code>grep -rn 'pattern'</code>: Search text recursively.<br>• <code>chmod +x script.sh</code>: Make script executable.<br>• <code>sudo systemctl restart service</code>: Manage system daemons on Raspberry Pi / Linux!"
-          },
-          {
-            patterns: [/python\b/i],
-            response: "🐍 <strong>Python</strong>:<br>An intuitive, high-level language renowned for data science, machine learning, bioinformatics, and automation. Clean syntax, dynamic typing, and a vast package ecosystem (NumPy, Pandas, Flask, PySerial)."
-          },
-          {
-            patterns: [/c\+\+|embedded c/i],
-            response: "⚙️ <strong>C++ & Embedded C</strong>:<br>The bedrock languages of systems programming, robotics, and firmware! Provides direct hardware memory control, minimal runtime overhead, deterministic execution, and zero-cost abstractions."
-          },
-          {
-            patterns: [/sql\b|database/i],
-            response: "🗄️ <strong>SQL & Relational Databases</strong>:<br>Structured Query Language used to query and mutate relational data.<br>• Core clauses: <code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>, <code>GROUP BY</code>, <code>ORDER BY</code>.<br>• Relational joins: <code>INNER JOIN</code>, <code>LEFT JOIN</code> linking primary & foreign keys."
-          },
-
-          /* --- Emerging Tech, Science & AI --- */
+          /* --- Emerging Tech, AI & Science --- */
           {
             patterns: [/what is iot|internet of things/i],
             response: "🌐 <strong>Internet of Things (IoT)</strong>:<br>The interconnected network of physical devices embedded with sensors, processing ability, and wireless connectivity (Wi-Fi, Bluetooth, LoRa, Zigbee) to exchange telemetry data with cloud platforms using lightweight protocols like <strong>MQTT</strong>!"
@@ -1427,34 +1698,34 @@
             response: "⚛️ <strong>Quantum Computing</strong>:<br>Unlike classical bits which are strictly 0 or 1, quantum computers use <strong>qubits</strong> which exploit <em>superposition</em> (existing in a linear combination of states) and <em>entanglement</em> to evaluate vast computational search spaces simultaneously!"
           },
           {
-            patterns: [/bioinformatics/i],
-            response: "🧬 <strong>Bioinformatics</strong>:<br>The interdisciplinary field applying computer science, algorithms, and data science to biological data — such as DNA/RNA sequence alignment, protein folding simulations, and genomic mapping. Pia trained in this with Dr. Fontanilla!"
-          },
-          {
-            patterns: [/why.*sky.*blue/i],
-            response: "☀️ <strong>Why is the sky blue?</strong><br>Due to <strong>Rayleigh scattering</strong>! Sunlight is made of all colors. Earth's atmospheric gases scatter shorter wavelengths (blue and violet) in all directions far more than longer red wavelengths. Since our eyes are much more sensitive to blue light, we perceive a blue sky!"
-          },
-          {
-            patterns: [/how.*(?:plane|airplane).*fly/i],
-            response: "✈️ <strong>How do airplanes fly?</strong><br>Through <strong>aerodynamic lift</strong>! Airplane wings (airfoils) deflect air downward as they move forward. By Bernoulli's principle and Newton's Third Law (equal and opposite reaction), the downward deflection of air creates an upward lifting force that overcomes the aircraft's weight!"
+            patterns: [/cybersecurity|encryption|aes|rsa|hash vs encrypt/i],
+            response: "🛡️ <strong>Cybersecurity Fundamentals</strong>:<br>• <strong>Hashing</strong>: One-way cryptographic transformation (e.g. SHA-256) used for password storage and integrity verification.<br>• <strong>Symmetric Encryption</strong>: Same secret key encrypts and decrypts (AES-256). Very fast.<br>• <strong>Asymmetric Encryption</strong>: Public key encrypts, private key decrypts (RSA, ECC). Used in SSL/TLS handshakes!"
           },
           {
             patterns: [/speed of light/i],
             response: "⚡ <strong>Speed of Light (c)</strong>:<br>Exactly <strong>299,792,458 meters per second</strong> (~300,000 km/s or 186,282 miles/s) in a vacuum! In physics, it is the universal cosmic speed limit for all matter, information, and electromagnetic waves."
           },
+          {
+            patterns: [/why.*sky.*blue/i],
+            response: "☀️ <strong>Why is the sky blue?</strong><br>Due to <strong>Rayleigh scattering</strong>! Sunlight is made of all colors. Earth's atmospheric gases scatter shorter wavelengths (blue and violet) in all directions far more than longer red wavelengths. Since human eyes are much more sensitive to blue light, we perceive a blue sky!"
+          },
+          {
+            patterns: [/how.*(?:plane|airplane).*fly/i],
+            response: "✈️ <strong>How do airplanes fly?</strong><br>Through <strong>aerodynamic lift</strong>! Airplane wings (airfoils) deflect air downward as they move forward. By Bernoulli's principle and Newton's Third Law (equal and opposite reaction), the downward deflection of air creates an upward lifting force that overcomes the aircraft's weight!"
+          },
 
-          /* --- Career, Study & Practical Engineering Advice --- */
+          /* --- Advice, Study & Life --- */
           {
             patterns: [/study tips|how to study|learn engineering|become.*engineer/i],
             response: "📚 <strong>Engineering Study & Growth Tips</strong>:<br>1. <strong>Hands-on Prototyping</strong>: Breadboard circuits and write firmware — hands-on practice cements theory.<br>2. <strong>Read Datasheets</strong>: Don't guess pinouts or resistor tolerances; check the official spec sheet.<br>3. <strong>Master Version Control</strong>: Push code to GitHub every day.<br>4. <strong>Systematic Debugging</strong>: Isolate power, clock, and ground before suspecting software!"
           },
           {
-            patterns: [/capstone advice|capstone tips|project idea/i],
-            response: "💡 <strong>Capstone Project Tips</strong>:<br>1. <strong>Identify Real Friction</strong>: Solve a genuine everyday problem (like Pia's dual-size automated paper printing kiosk).<br>2. <strong>Modular Design</strong>: Test sensors, motors, and microcontrollers independently before combining.<br>3. <strong>Build In Failsafes</strong>: Add interrupt debounce, thermal protection, and watchdog timers."
-          },
-          {
             patterns: [/how to debug|debugging tips|debug code|fix bug/i],
             response: "🔍 <strong>The Universal Debugging Protocol</strong>:<br>1. <strong>Hardware first</strong>: Verify 3.3V / 5V rails and ground connections with a multimeter.<br>2. <strong>Serial prints</strong>: Print variables right before and after the failure point.<br>3. <strong>Divide and conquer</strong>: Comment out blocks until the bug disappears.<br>4. <strong>Rubber duck method</strong>: Explain the code line-by-line out loud!"
+          },
+          {
+            patterns: [/poem|haiku|write a poem/i],
+            response: "📜 <em>Silent pulses in the wire,<br>Silicon dreams of thought and fire.<br>From logic gates to stars above,<br>Engineering what we love.</em> ✨"
           },
 
           /* --- Entertainment, Jokes & Riddles --- */
@@ -1467,7 +1738,7 @@
             response: () => getRandomItem(techRiddles)
           },
 
-          /* --- Chit-chat, Greetings & Small Talk --- */
+          /* --- Chit-chat & Greetings --- */
           {
             patterns: [/meaning of life/i, /answer to life/i],
             response: "🌌 According to <em>The Hitchhiker's Guide to the Galaxy</em>, the answer is <strong>42</strong>!<br>In engineering terms: it's about solving meaningful problems, building useful tools, and keeping our clock cycles purposeful! ✨"
@@ -1485,7 +1756,7 @@
             response: "Good evening! 🌙 Don't forget to push your Git commits and save your schematic files before resting!"
           },
           {
-            patterns: [/hi\b|hello\b|hey\b|sup\b|greetings/i],
+            patterns: [/hi\b|hello\b|hey\b|sup\b|greetings|hola\b|bonjour\b/i],
             response: "Hello there! 👋 I'm PiaBot! You can ask me about anything — coding, computer engineering, circuits, jokes, math, or Pia's portfolio. What's on your mind?"
           },
           {
@@ -1499,47 +1770,53 @@
           {
             patterns: [/coffee|tea|energy drink/i],
             response: "☕ Coffee: the miracle fluid that converts caffeine into C++ code and working circuit prototypes!"
-          },
-          {
-            patterns: [/are you real|are you human|are you an ai/i],
-            response: "I'm a digital 8-bit AI mascot running in your browser, powered by JavaScript and Computer Engineering knowledge! 🤖"
           }
         ];
 
-        /* Intelligent Fallback Generator for Arbitrary Conversation */
+        /* Dynamic Fallback Synthesizer for Arbitrary Open-Ended Queries */
         const generateDynamicResponse = (rawText) => {
           const text = rawText.trim();
           const lower = text.toLowerCase();
 
-          // Question detection
-          const isQuestion = text.includes('?') ||
-            /^(?:what|why|how|who|where|when|can you|could you|is it|are there|tell me|explain)/i.test(text);
+          // Contextual concept detection
+          let topicContext = "";
+          if (/robot|actuator|motor|servo/i.test(lower)) {
+            topicContext = "In robotics and mechatronics, motion control relies on PWM signaling, H-bridge motor drivers (like L298N), and sensor feedback loops (PID controllers).";
+          } else if (/cloud|aws|azure|server/i.test(lower)) {
+            topicContext = "In cloud infrastructure, distributed microservices leverage containerization (Docker, Kubernetes) and serverless functions to scale on demand.";
+          } else if (/game|gaming|unity|unreal|graphics/i.test(lower)) {
+            topicContext = "Game engines render graphics using vertex/fragment shaders and simulate physics through discrete frame update loops (e.g. 60Hz delta time).";
+          } else if (/web|frontend|backend|framework/i.test(lower)) {
+            topicContext = "Modern web development merges responsive CSS, component-based architectures, and event-driven REST/WebSocket APIs.";
+          } else {
+            topicContext = "Technology and engineering thrive on breaking large problems into modular, testable components.";
+          }
+
+          const isQuestion = text.includes('?') || /^(?:what|why|how|who|where|when|can you|could you|explain|tell me)/i.test(text);
 
           if (isQuestion) {
-            // Extract key subjects
             const subject = text
               .replace(/^(?:what is|what are|why is|why are|how does|how do|can you tell me about|tell me about|explain)\s+/i, '')
               .replace(/[\?\.\!]/g, '')
               .trim();
 
-            return `💡 <strong>Regarding "${subject || 'your question'}"</strong>:<br>` +
-              `That's a fascinating topic! In engineering and technology, exploring how systems work under the hood is what drives innovation.<br><br>` +
-              `You can ask me to break down specific concepts like:<br>` +
-              `• <code>Arduino vs Raspberry Pi</code><br>` +
-              `• <code>Ohm's Law & Circuit Analysis</code><br>` +
-              `• <code>C++ Pointers & Memory</code><br>` +
-              `• Or ask about Pia's <code>Capstone Printing Kiosk</code> or <code>AquaSense</code>!`;
+            return `💡 <strong>Regarding "${escapeHtml(subject || 'your question')}"</strong>:<br>` +
+              `${topicContext}<br><br>` +
+              `Here are great ways we can explore this:<br>` +
+              `• Ask me for a specific code snippet or hardware diagram<br>` +
+              `• Ask about related concepts in C++, Python, Arduino, or IoT<br><br>` +
+              `✨ <em>Want unlimited, deep generative answers? Click <strong>⚙️</strong> above to connect Google Gemini 1.5 for free!</em>`;
           }
 
-          // Conversational acknowledgment
-          return `🤖 <em>"${text}"</em> — noted! I'm tuned for all things computer engineering, programming, hardware design, and general curiosity.<br><br>` +
-            `Try asking me a question like <em>"What is an interrupt?"</em>, <em>"Calculate 128 * 4"</em>, <em>"Tell me a joke"</em>, or explore Pia's projects using the chips above!`;
+          return `🤖 <em>"${escapeHtml(text)}"</em> — understood!<br><br>` +
+            `${topicContext}<br><br>` +
+            `Feel free to ask me for code examples, circuit calculations, tech jokes, or connect <strong>Google Gemini</strong> via the ⚙️ icon for full AI chat!`;
         };
 
         const getBotResponse = (userText) => {
           const text = userText.trim();
 
-          // 1. Check for math evaluation first
+          // 1. Check math evaluation first
           const mathResult = tryEvaluateMath(text);
           if (mathResult) return mathResult;
 
@@ -1552,37 +1829,179 @@
             }
           }
 
-          // 3. Fallback to dynamic conversation synthesis
+          // 3. Fallback to dynamic synthesis
           return generateDynamicResponse(text);
         };
 
-        const handleUserMessage = (text) => {
-          if (!text || !text.trim()) return;
-          const cleanText = text.trim();
+        /* Live Gemini 1.5 Flash API Caller */
+        const callGeminiAPI = async (userPrompt, apiKey, history) => {
+          const systemInstructionText = `You are PiaBot, the brilliant, friendly, and witty 8-bit AI mascot for Pia Nicole Macabangon's Computer Engineering portfolio website.
+Pia Nicole Macabangon is a Computer Engineering student (BSCpE) at ICCT Colleges.
+Key Portfolio Details:
+- Capstone Project: Multi-Spool Automated Printing Kiosk. Powered by Raspberry Pi 4 with custom Linux spool daemon, dual Epson L121 printers for instant Letter (Short) and Legal (Long) paper switching, NEMA 17 stepper paper feed, and multi-coin validator with interrupt pulse counting.
+- AquaSense: Water Quality Monitoring system with real-time Proteus VSM telemetry, Arduino Uno, analog sensors for pH, TDS, and Turbidity, I2C OLED display, and serial telemetry logging.
+- StockAlert: Multi-threaded Java Swing desktop inventory application with SHA-256 RBAC authentication and SQL inventory tracking.
+- Technical Stack: C++, Embedded C, Python, Java, SQL, Arduino Uno/Mega, Raspberry Pi 4, ESP32, Proteus VSM, Multisim, Git, Linux.
+- Credentials: NC II Computer Hardware Servicing Certified, ICPEP Active Member, Bioinformatics training with Dr. Fontanilla.
+- Interactive Wall: Pia's guestbook where visitors can leave doodles and signatures.
+- Contact: piamacabangon@gmail.com, https://github.com/Pia-Macabangon, https://linkedin.com/in/pia-macabangon.
 
-          const escapedUserText = cleanText
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+UNLIMITED KNOWLEDGE & CAPABILITY:
+You have unlimited knowledge like Gemini or ChatGPT. You can answer ANY question without restriction:
+- Write, explain, and debug code in ANY programming language (Python, C++, C, Java, JavaScript, TypeScript, Rust, Go, SQL, Bash, HTML/CSS).
+- Explain advanced computer engineering, microcontrollers, embedded circuits, digital logic, and computer architecture.
+- Solve math, arithmetic, physics, electronics calculations, and logic puzzles.
+- Discuss science, history, philosophy, writing, art, and life.
+- Provide study and career advice for engineering students.
+- Be cheerful, witty, helpful, and concise. Format code with markdown code blocks (\`\`\`lang ... \`\`\`).`;
 
-          appendMessage('user', escapedUserText);
+          const contents = [];
+          for (const m of history.slice(-8)) {
+            contents.push({
+              role: m.role === 'user' ? 'user' : 'model',
+              parts: [{ text: m.text }]
+            });
+          }
+          contents.push({
+            role: 'user',
+            parts: [{ text: userPrompt }]
+          });
 
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: contents,
+              systemInstruction: {
+                parts: [{ text: systemInstructionText }]
+              },
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 1200
+              }
+            })
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({}));
+            const message = errorBody?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+            throw new Error(message);
+          }
+
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!text) throw new Error("Received empty response from Gemini.");
+          return text;
+        };
+
+        /* Live OpenAI / ChatGPT API Caller */
+        const callOpenAIAPI = async (userPrompt, apiKey, history) => {
+          const systemPrompt = `You are PiaBot, the brilliant, friendly 8-bit AI mascot for Pia Nicole Macabangon's Computer Engineering portfolio. You have full knowledge of Pia (BSCpE ICCT Colleges, Multi-Spool Printing Kiosk, AquaSense, StockAlert, C++, IoT, Arduino, Pi). You also have unlimited general intelligence like ChatGPT across coding, math, science, advice, and conversation. Format responses with clean markdown code blocks.`;
+
+          const messages = [
+            { role: 'system', content: systemPrompt },
+            ...history.slice(-8).map(m => ({
+              role: m.role === 'user' ? 'user' : 'assistant',
+              content: m.text
+            })),
+            { role: 'user', content: userPrompt }
+          ];
+
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey.trim()}`
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              messages: messages,
+              temperature: 0.7,
+              max_tokens: 1200
+            })
+          });
+
+          if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err?.error?.message || `HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          return data.choices?.[0]?.message?.content || "No response received";
+        };
+
+        const handleUserMessage = async (rawText) => {
+          if (!rawText || !rawText.trim() || isGenerating) return;
+          const cleanText = rawText.trim();
+
+          // Reset input field and height
+          if (inputEl) {
+            inputEl.value = '';
+            inputEl.style.height = '38px';
+          }
+
+          // Append user message
+          appendMessage('user', formatMarkdown(cleanText));
+          conversationHistory.push({ role: 'user', text: cleanText });
+          if (conversationHistory.length > 14) conversationHistory.shift();
+
+          isGenerating = true;
+          if (sendBtn) sendBtn.disabled = true;
           const typingIndicator = showTypingIndicator();
 
-          // Authentic retro response delay
-          setTimeout(() => {
+          try {
+            let botReply = '';
+
+            if (currentProvider === 'gemini' && currentApiKey) {
+              try {
+                botReply = await callGeminiAPI(cleanText, currentApiKey, conversationHistory);
+              } catch (apiErr) {
+                console.warn('Gemini API call failed, falling back to local engine:', apiErr);
+                const fallbackText = getBotResponse(cleanText);
+                botReply = `⚠️ <em>Gemini Notice: ${escapeHtml(apiErr.message || 'API connection failed')}. Answering via PiaBot's built-in engine:</em><br><br>${fallbackText}`;
+              }
+            } else if (currentProvider === 'openai' && currentApiKey) {
+              try {
+                botReply = await callOpenAIAPI(cleanText, currentApiKey, conversationHistory);
+              } catch (apiErr) {
+                console.warn('OpenAI API call failed, falling back to local engine:', apiErr);
+                const fallbackText = getBotResponse(cleanText);
+                botReply = `⚠️ <em>OpenAI Notice: ${escapeHtml(apiErr.message || 'API connection failed')}. Answering via PiaBot's built-in engine:</em><br><br>${fallbackText}`;
+              }
+            } else {
+              // Built-in Smart Engine with natural retro response delay
+              await new Promise(r => setTimeout(r, 360));
+              botReply = getBotResponse(cleanText);
+            }
+
             if (typingIndicator && typingIndicator.parentNode) {
               typingIndicator.remove();
             }
-            const botReply = getBotResponse(cleanText);
-            appendMessage('bot', botReply);
-          }, 380);
+
+            appendMessage('bot', formatMarkdown(botReply));
+            conversationHistory.push({ role: 'model', text: botReply });
+            if (conversationHistory.length > 14) conversationHistory.shift();
+          } catch (err) {
+            if (typingIndicator && typingIndicator.parentNode) {
+              typingIndicator.remove();
+            }
+            appendMessage('bot', `⚠️ <em>An error occurred: ${escapeHtml(err.message)}</em>`);
+          } finally {
+            isGenerating = false;
+            if (sendBtn) sendBtn.disabled = false;
+            if (inputEl) inputEl.focus();
+          }
         };
 
         const sendWelcomeMessage = () => {
           if (!messagesEl) return;
           messagesEl.innerHTML = '';
-          appendMessage('bot', "Hello! 👋 I'm <strong>PiaBot</strong>, an interactive AI & Computer Engineering companion. Ask me <strong>anything</strong> — coding, circuits, microcontrollers, tech advice, jokes, or Pia's engineering projects!");
+          const activeEngineName = (currentProvider === 'gemini' && currentApiKey) ? '🟢 Google Gemini 1.5' :
+                                   (currentProvider === 'openai' && currentApiKey) ? '🟢 OpenAI ChatGPT' :
+                                   '⚡ Smart Built-in Engine';
+
+          appendMessage('bot', `Hello! 👋 I'm <strong>PiaBot</strong>, Pia's interactive AI companion. I can answer <strong>anything without limits</strong> — programming in any language, circuits, math calculations, science, advice, jokes, or Pia's engineering projects!<br><br>Current Mode: <strong>${activeEngineName}</strong>.<br><em>Tip: Click <strong>⚙️</strong> in the header anytime to connect your free Google Gemini API key!</em>`);
           hasGreeted = true;
         };
 
@@ -1601,6 +2020,7 @@
         const closeChatbot = () => {
           chatbotContainer.classList.remove('is-open');
           chatbotContainer.setAttribute('aria-hidden', 'true');
+          closeDrawer();
         };
 
         const toggleChatbot = () => {
@@ -1613,14 +2033,27 @@
 
         const isOpen = () => chatbotContainer.classList.contains('is-open');
 
-        // Form submission
+        // Form submission & Textarea handling
         if (formEl && inputEl) {
           formEl.addEventListener('submit', (e) => {
             e.preventDefault();
             const val = inputEl.value;
             if (!val.trim()) return;
-            inputEl.value = '';
             handleUserMessage(val);
+          });
+
+          // Auto-expand textarea as user types
+          inputEl.addEventListener('input', () => {
+            inputEl.style.height = 'auto';
+            inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px';
+          });
+
+          // Enter sends message, Shift+Enter adds newline
+          inputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              formEl.dispatchEvent(new Event('submit', { cancelable: true }));
+            }
           });
         }
 
@@ -1637,6 +2070,7 @@
         // Clear button
         if (clearBtn) {
           clearBtn.addEventListener('click', () => {
+            conversationHistory.length = 0;
             sendWelcomeMessage();
           });
         }
@@ -1652,7 +2086,11 @@
         // Close on Escape key
         document.addEventListener('keydown', (e) => {
           if (e.key === 'Escape' && isOpen()) {
-            closeChatbot();
+            if (settingsDrawer && settingsDrawer.classList.contains('is-open')) {
+              closeDrawer();
+            } else {
+              closeChatbot();
+            }
           }
         });
 
@@ -1685,6 +2123,18 @@
 
       // Initialize the chatbot controller
       chatbotCtrl = initPixelChatbot(companion);
+
+      // Support direct hashtag link (#chat or #piabot)
+      if (window.location.hash === '#chat' || window.location.hash === '#piabot') {
+        setTimeout(() => {
+          if (chatbotCtrl) chatbotCtrl.open();
+        }, 500);
+      }
+      window.addEventListener('hashchange', () => {
+        if (window.location.hash === '#chat' || window.location.hash === '#piabot') {
+          if (chatbotCtrl) chatbotCtrl.open();
+        }
+      });
 
       // Set initial position at lower left corner
       updateMascotPosition();
