@@ -655,6 +655,26 @@
         } catch (e) {}
       };
 
+      // Helper: IDs of pins deleted on this browser (to prevent resurrection)
+      const getDeletedPinIds = () => {
+        try {
+          const stored = localStorage.getItem('pia-deleted-pins');
+          return stored ? JSON.parse(stored) : [];
+        } catch (e) {
+          return [];
+        }
+      };
+
+      const addDeletedPinId = (id) => {
+        try {
+          const list = getDeletedPinIds();
+          if (!list.includes(id)) {
+            list.push(id);
+            localStorage.setItem('pia-deleted-pins', JSON.stringify(list));
+          }
+        } catch (e) {}
+      };
+
       // Helper: Owner mode check
       const isOwnerActive = () => {
         try {
@@ -695,24 +715,27 @@
           const res = await fetch(`${FIREBASE_URL}/pins.json`);
           if (!res.ok) return;
           const data = await res.json();
-          if (data && typeof data === 'object') {
-            const cloudPins = Object.keys(data).map(key => ({
-              ...data[key],
-              cloudKey: key
-            })).reverse();
 
-            const localPins = getStoredPins();
-            const hostNote = defaultPins[0];
-            const cloudIds = new Set(cloudPins.map(p => p.id));
-            const unmergedLocal = localPins.filter(p => !cloudIds.has(p.id) && p.id !== 'seed-pia');
+          // Handle null or empty database safely without throwing
+          const cloudPins = (data && typeof data === 'object')
+            ? Object.keys(data).map(key => ({ ...data[key], cloudKey: key })).reverse()
+            : [];
 
-            // Combine: Host Note first, followed by cloud community pins and any unmerged local custom pins
-            const combined = [hostNote, ...cloudPins.filter(p => p.id !== 'seed-pia'), ...unmergedLocal];
-            try {
-              localStorage.setItem('pia-wall-pins', JSON.stringify(combined));
-            } catch (e) {}
-            renderWall();
-          }
+          const deletedIds = new Set(getDeletedPinIds());
+          const activeCloudPins = cloudPins.filter(p => p && p.id && !deletedIds.has(p.id) && p.id !== 'seed-pia');
+
+          // Pending local pins waiting to sync (created on this device only)
+          const localPins = getStoredPins();
+          const cloudIds = new Set(activeCloudPins.map(p => p.id));
+          const myPinIds = new Set(getMyPinIds());
+          const pendingLocal = localPins.filter(p => myPinIds.has(p.id) && !cloudIds.has(p.id) && !deletedIds.has(p.id) && p.id !== 'seed-pia');
+
+          // Definitive pin list: Official Host Note, followed by pending local pins, and active cloud community pins
+          const combined = [defaultPins[0], ...pendingLocal, ...activeCloudPins];
+          try {
+            localStorage.setItem('pia-wall-pins', JSON.stringify(combined));
+          } catch (e) {}
+          renderWall();
         } catch (err) {
           // Graceful silent fallback
         }
@@ -744,15 +767,15 @@
         try {
           if (cloudKey) {
             await fetch(`${FIREBASE_URL}/pins/${cloudKey}.json`, { method: 'DELETE' });
-          } else {
-            const res = await fetch(`${FIREBASE_URL}/pins.json`);
-            if (res.ok) {
-              const data = await res.json();
-              if (data) {
-                const key = Object.keys(data).find(k => data[k] && data[k].id === pinId);
-                if (key) {
-                  await fetch(`${FIREBASE_URL}/pins/${key}.json`, { method: 'DELETE' });
-                }
+          }
+          // Also check by ID in case cloudKey is not yet attached
+          const res = await fetch(`${FIREBASE_URL}/pins.json`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && typeof data === 'object') {
+              const key = Object.keys(data).find(k => data[k] && data[k].id === pinId);
+              if (key) {
+                await fetch(`${FIREBASE_URL}/pins/${key}.json`, { method: 'DELETE' });
               }
             }
           }
@@ -894,11 +917,15 @@
 
             if (window.confirm(confirmMsg)) {
               const cloudKey = btn.dataset.cloud || targetPin.cloudKey;
+
+              // Record as deleted so it can never resurrect
+              addDeletedPinId(pinId);
+              removeMyPinId(pinId);
+
               currentPins.splice(idx, 1);
               try {
                 localStorage.setItem('pia-wall-pins', JSON.stringify(currentPins));
               } catch (err) {}
-              removeMyPinId(pinId);
 
               // Background delete from Firebase
               deletePinFromCloud(pinId, cloudKey);
@@ -952,7 +979,9 @@
           }
           if (window.confirm('Owner Action: Are you sure you want to reset all pins to default? This will clear all visitor pins.')) {
             try {
-              localStorage.removeItem('pia-wall-pins');
+              localStorage.setItem('pia-wall-pins', JSON.stringify([defaultPins[0]]));
+              localStorage.removeItem('pia-my-pins');
+              localStorage.removeItem('pia-deleted-pins');
             } catch (e) {}
             resetCloudWall();
             renderWall();
