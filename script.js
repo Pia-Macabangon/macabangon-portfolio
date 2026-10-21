@@ -1220,12 +1220,15 @@
           chatbotContainer.style.left = `${targetLeft}px`;
         };
 
+        let cachedGeminiModel = localStorage.getItem('piabot_gemini_model') || null;
+
         const updateStatusBadge = () => {
           if (!statusBadge) return;
           if (currentProvider === 'gemini' && currentApiKey) {
             statusBadge.className = 'pixel-status-badge gemini';
-            statusBadge.innerHTML = '🟢 GEMINI 1.5 ACTIVE';
-            statusBadge.title = 'Connected to Google Gemini 1.5 Flash (Click to configure)';
+            const badgeText = cachedGeminiModel ? `🟢 ${cachedGeminiModel.replace(/^gemini-/, '').toUpperCase()} ACTIVE` : '🟢 GEMINI AI ACTIVE';
+            statusBadge.innerHTML = badgeText;
+            statusBadge.title = `Connected to Google Gemini (${cachedGeminiModel || 'Flash'}) (Click to configure)`;
           } else if (currentProvider === 'openai' && currentApiKey) {
             statusBadge.className = 'pixel-status-badge openai';
             statusBadge.innerHTML = '🟢 CHATGPT ACTIVE';
@@ -1335,8 +1338,10 @@
           clearSettingsBtn.addEventListener('click', () => {
             currentProvider = 'builtin';
             currentApiKey = '';
+            cachedGeminiModel = null;
             localStorage.removeItem('piabot_provider');
             localStorage.removeItem('piabot_api_key');
+            localStorage.removeItem('piabot_gemini_model');
             if (providerSelect) providerSelect.value = 'builtin';
             if (apiKeyInput) apiKeyInput.value = '';
             updateDrawerFields();
@@ -1833,7 +1838,37 @@
           return generateDynamicResponse(text);
         };
 
-        /* Live Gemini 1.5 Flash API Caller */
+        /* Dynamic Gemini Model Detector & Auto-Fallback Engine */
+        const detectWorkingGeminiModel = async (apiKey) => {
+          if (cachedGeminiModel) return cachedGeminiModel;
+
+          try {
+            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey.trim())}`);
+            if (listRes.ok) {
+              const listData = await listRes.json();
+              if (listData.models && Array.isArray(listData.models)) {
+                const suitable = listData.models.filter(m => 
+                  m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
+                );
+                // Prefer modern flash models (gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash)
+                const flashModel = suitable.find(m => /flash/i.test(m.name));
+                const chosen = flashModel || suitable[0];
+                if (chosen) {
+                  const modelName = chosen.name.replace(/^models\//, '');
+                  cachedGeminiModel = modelName;
+                  localStorage.setItem('piabot_gemini_model', modelName);
+                  updateStatusBadge();
+                  return modelName;
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("Gemini ListModels check skipped:", e);
+          }
+
+          return 'gemini-2.0-flash';
+        };
+
         const callGeminiAPI = async (userPrompt, apiKey, history) => {
           const systemInstructionText = `You are PiaBot, the brilliant, friendly, and witty 8-bit AI mascot for Pia Nicole Macabangon's Computer Engineering portfolio website.
 Pia Nicole Macabangon is a Computer Engineering student (BSCpE) at ICCT Colleges.
@@ -1867,32 +1902,73 @@ You have unlimited knowledge like Gemini or ChatGPT. You can answer ANY question
             parts: [{ text: userPrompt }]
           });
 
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: contents,
-              systemInstruction: {
-                parts: [{ text: systemInstructionText }]
-              },
-              generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 1200
-              }
-            })
+          const requestBody = JSON.stringify({
+            contents: contents,
+            systemInstruction: {
+              parts: [{ text: systemInstructionText }]
+            },
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 1200
+            }
           });
 
-          if (!response.ok) {
-            const errorBody = await response.json().catch(() => ({}));
-            const message = errorBody?.error?.message || `HTTP ${response.status} ${response.statusText}`;
-            throw new Error(message);
+          // Detect active model or cycle through known active candidates
+          const detectedModel = await detectWorkingGeminiModel(apiKey);
+          const candidateModels = [
+            detectedModel,
+            'gemini-2.5-flash',
+            'gemini-2.0-flash',
+            'gemini-2.0-flash-exp',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-flash',
+            'gemini-1.5-pro',
+            'gemini-pro'
+          ];
+          const uniqueCandidates = [...new Set(candidateModels.filter(Boolean))];
+
+          let lastError = null;
+
+          for (const model of uniqueCandidates) {
+            try {
+              const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
+              const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: requestBody
+              });
+
+              if (response.ok) {
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                  cachedGeminiModel = model;
+                  localStorage.setItem('piabot_gemini_model', model);
+                  updateStatusBadge();
+                  return text;
+                }
+              } else {
+                const errorBody = await response.json().catch(() => ({}));
+                const message = errorBody?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+                lastError = new Error(message);
+
+                // If model not found / unsupported on this key, try the next candidate model
+                if (message.includes('not found') || message.includes('not supported') || response.status === 404) {
+                  continue;
+                } else {
+                  // For other errors (invalid API key, billing, quota), do not loop needlessly
+                  throw lastError;
+                }
+              }
+            } catch (err) {
+              if (err.message && (err.message.includes('not found') || err.message.includes('not supported'))) {
+                continue;
+              }
+              throw err;
+            }
           }
 
-          const data = await response.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (!text) throw new Error("Received empty response from Gemini.");
-          return text;
+          throw lastError || new Error("Unable to connect to Google Gemini. Please check your API key.");
         };
 
         /* Live OpenAI / ChatGPT API Caller */
