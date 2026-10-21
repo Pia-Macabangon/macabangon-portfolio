@@ -982,10 +982,15 @@
               </h3>
               <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; margin-top: 0.25rem;">
                 <span class="meta-mono" id="wall-count-badge">3 PINS RECORDED</span>
+                <span id="cloud-status-badge" class="cloud-status-pill" style="display: none;">☁️ Global Sync Active</span>
                 <span id="owner-status-badge" class="owner-status-pill" style="display: none;">👑 Owner Mode</span>
               </div>
             </div>
             <div class="wall-heading-actions" style="display: flex; gap: 0.5rem; align-items: center;">
+              <!-- Cloud Sync Button -->
+              <button id="wall-cloud-btn" class="btn-miggs-secondary btn-cloud-sync" type="button" title="Sync doodles across all visitors worldwide">
+                <span id="wall-cloud-btn-text">☁️ Sync Online</span>
+              </button>
               <!-- Reset Wall: Only visible to Website Owner -->
               <button id="reset-wall-btn" class="btn-miggs-secondary wall-owner-only" type="button" title="Clear all custom pins and restore default wall" style="display: none;">
                 <span>Reset Wall ↺</span>
@@ -998,7 +1003,52 @@
           </div>
 
           <div class="wall-cards-grid" id="wall-cards-container">
+            <!-- Live Real-Time Doodle Preview Card (Visible while someone is doodling) -->
+            <div id="live-doodle-card" class="wall-pin-card live-doodle-card" style="display: none;">
+              <div class="live-doodle-banner">
+                <span class="live-dot-pulse"></span>
+                <span>LIVE DOODLE IN PROGRESS</span>
+              </div>
+              <div class="wall-card-canvas-box live-preview-box">
+                <canvas id="live-doodle-mirror-canvas" width="320" height="200"></canvas>
+              </div>
+              <p class="wall-card-caption" id="live-doodle-caption">Doodling on the pad above...</p>
+              <div class="wall-card-footer">
+                <div class="wall-card-avatar" id="live-doodle-avatar">✍️</div>
+                <div class="wall-card-meta">
+                  <span class="wall-card-author" id="live-doodle-author">Drawing now...</span>
+                  <span class="wall-card-date">Live Draft</span>
+                </div>
+              </div>
+            </div>
             <!-- Pinned Cards dynamically loaded + curated initial community pins -->
+          </div>
+        </div>
+
+        <!-- Cloud Sync Modal for The Wall -->
+        <div id="wall-cloud-modal" class="wall-cloud-modal" aria-hidden="true" style="display: none;">
+          <div class="wall-modal-backdrop" id="wall-cloud-modal-backdrop"></div>
+          <div class="wall-modal-window">
+            <div class="wall-modal-header">
+              <span class="wall-modal-title">☁️ GLOBAL COMMUNITY WALL SYNC</span>
+              <button type="button" id="wall-cloud-modal-close" class="wall-modal-close-btn" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="wall-modal-body">
+              <p class="wall-modal-desc">
+                Sync The Wall so <strong>every visitor on any phone or laptop worldwide</strong> can view and share community doodles in real time!
+              </p>
+              <div class="pixel-setting-row">
+                <label for="wall-cloud-url-input" class="pixel-setting-label">Firebase Database URL</label>
+                <input type="text" id="wall-cloud-url-input" class="pixel-form-input" placeholder="https://your-project-default-rtdb.firebaseio.com" autocomplete="off">
+                <span class="pixel-settings-hint" style="font-size: 0.65rem; color: #6b7280; line-height: 1.4; margin-top: 0.25rem;">
+                  👉 100% Free: Go to <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a> &rarr; Create Project &rarr; Build &rarr; Realtime Database &rarr; Set Rules to <code>{".read": true, ".write": true}</code> &rarr; Copy URL here.
+                </span>
+              </div>
+              <div class="wall-modal-actions">
+                <button type="button" id="wall-cloud-save-btn" class="pixel-btn-primary">Save &amp; Connect Cloud</button>
+                <button type="button" id="wall-cloud-disconnect-btn" class="pixel-btn-secondary">Use Local Mode</button>
+              </div>
+            </div>
           </div>
         </div>
 

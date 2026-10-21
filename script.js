@@ -1,4 +1,4 @@
-(() => {
+﻿(() => {
   'use strict';
 
   /* ==========================================================================
@@ -433,449 +433,675 @@
     pixelCursor.classList.remove('is-active', 'is-hovering', 'is-clicking');
   });
 
-  /* ==========================================================================
-     9. Interactive Sketch Drawing Pad (canvas-design About page studio)
-     ========================================================================== */
-  const pad = document.querySelector('#drawing-pad');
-  const padContext = pad?.getContext('2d');
-  if (padContext) {
-    let drawing = false;
-    let previous = null;
-    let activePointer = null;
-    const wrapper = pad.parentElement;
-    const status = document.querySelector('.pad-status');
+      /* ==========================================================================
+       9. Interactive Sketch Drawing Pad (with Real-Time Live Doodle Sync)
+       ========================================================================== */
+    const pad = document.querySelector('#drawing-pad');
+    const padContext = pad?.getContext('2d');
+    if (padContext) {
+      let drawing = false;
+      let previous = null;
+      let activePointer = null;
+      const wrapper = pad.parentElement;
+      const status = document.querySelector('.pad-status');
 
-    const resizePad = () => {
-      const snapshot = document.createElement('canvas');
-      snapshot.width = pad.width;
-      snapshot.height = pad.height;
-      if (pad.width && pad.height) snapshot.getContext('2d').drawImage(pad, 0, 0);
+      const resizePad = () => {
+        const snapshot = document.createElement('canvas');
+        snapshot.width = pad.width;
+        snapshot.height = pad.height;
+        if (pad.width && pad.height) snapshot.getContext('2d').drawImage(pad, 0, 0);
 
-      const rect = wrapper.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      pad.width = Math.round(rect.width * dpr);
-      pad.height = Math.round(rect.height * dpr);
-      padContext.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const rect = wrapper.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        pad.width = Math.round(rect.width * dpr);
+        pad.height = Math.round(rect.height * dpr);
+        padContext.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      if (snapshot.width && snapshot.height) {
-        padContext.drawImage(snapshot, 0, 0, rect.width, rect.height);
-      }
-      drawing = false;
-      previous = null;
-      activePointer = null;
-    };
-
-    const position = event => {
-      const rect = pad.getBoundingClientRect();
-      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    };
-
-    const draw = (from, to, pressure) => {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const strokeColor = isDark ? '#f4f4f6' : '#0f0f11';
-      padContext.strokeStyle = strokeColor;
-      padContext.fillStyle = strokeColor;
-      padContext.lineWidth = 1.4 + pressure * 1.5;
-      padContext.lineCap = 'round';
-      padContext.lineJoin = 'round';
-
-      if (from.x === to.x && from.y === to.y) {
-        padContext.beginPath();
-        padContext.arc(to.x, to.y, 1.2, 0, Math.PI * 2);
-        padContext.fill();
-      } else {
-        padContext.beginPath();
-        padContext.moveTo(from.x, from.y);
-        padContext.lineTo(to.x, to.y);
-        padContext.stroke();
-      }
-    };
-
-    resizePad();
-    new ResizeObserver(resizePad).observe(wrapper);
-
-    pad.addEventListener('pointerdown', event => {
-      if (activePointer !== null || (event.pointerType === 'mouse' && event.button !== 0)) return;
-      activePointer = event.pointerId;
-      drawing = true;
-      previous = position(event);
-      pad.setPointerCapture(event.pointerId);
-      draw(previous, previous, event.pressure || 0.5);
-      wrapper.classList.add('has-drawing');
-      if (status) status.textContent = '';
-    });
-
-    pad.addEventListener('pointermove', event => {
-      if (!drawing || event.pointerId !== activePointer) return;
-      const point = position(event);
-      draw(previous, point, event.pressure || 0.5);
-      previous = point;
-    });
-
-    const stopDrawing = event => {
-      if (event.pointerId === activePointer) {
+        if (snapshot.width && snapshot.height) {
+          padContext.drawImage(snapshot, 0, 0, rect.width, rect.height);
+        }
         drawing = false;
         previous = null;
         activePointer = null;
-      }
-    };
+      };
 
-    pad.addEventListener('pointerup', stopDrawing);
-    pad.addEventListener('pointercancel', stopDrawing);
-    pad.addEventListener('lostpointercapture', stopDrawing);
+      const position = event => {
+        const rect = pad.getBoundingClientRect();
+        return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      };
 
-    document.querySelector('#clear-pad')?.addEventListener('click', () => {
-      padContext.clearRect(0, 0, pad.width, pad.height);
-      wrapper.classList.remove('has-drawing');
-      if (status) status.textContent = 'A fresh page, ready for a new stroke.';
-    });
+      const draw = (from, to, pressure) => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const strokeColor = isDark ? '#f4f4f6' : '#0f0f11';
+        padContext.strokeStyle = strokeColor;
+        padContext.fillStyle = strokeColor;
+        padContext.lineWidth = 1.4 + pressure * 1.5;
+        padContext.lineCap = 'round';
+        padContext.lineJoin = 'round';
 
-    document.querySelector('#save-pad')?.addEventListener('click', () => {
-      if (!wrapper.classList.contains('has-drawing')) {
-        if (status) status.textContent = 'Draw a line or sketch first, then save.';
-        return;
-      }
-      const exportCanvas = document.createElement('canvas');
-      exportCanvas.width = pad.width;
-      exportCanvas.height = pad.height;
-      const expCtx = exportCanvas.getContext('2d');
-      expCtx.fillStyle = '#f5f2eb';
-      expCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-      expCtx.drawImage(pad, 0, 0);
-
-      exportCanvas.toBlob(blob => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `pia-sketchbook-${Date.now()}.png`;
-        if (status) status.textContent = 'Your sketch was saved to downloads.';
-      }, 'image/png');
-    });
-  } // End Section 9: Interactive Sketch Drawing Pad
-
-  /* ==========================================================================
-     10. The Wall (Pinning sketches & notes with LocalStorage & Owner Permissions)
-     ========================================================================== */
-  const initTheWall = () => {
-    const wallContainer = document.querySelector('#wall-cards-container');
-    const wallCountBadge = document.querySelector('#wall-count-badge');
-    const pinBtn = document.querySelector('#pin-pad-btn');
-    const authorInput = document.querySelector('#wall-author-name');
-    const noteInput = document.querySelector('#wall-note-text');
-    const wallOwnerBtn = document.querySelector('#wall-owner-btn');
-    const ownerBtnText = document.querySelector('#owner-btn-text');
-    const ownerStatusBadge = document.querySelector('#owner-status-badge');
-    const resetWallBtn = document.querySelector('#reset-wall-btn');
-    const status = document.querySelector('.pad-status');
-
-    // Preset seed pins (curated welcome & peer notes exclusively for Pia's portfolio)
-    const defaultPins = [
-      {
-        id: 'seed-pia',
-        author: 'Pia Macabangon',
-        role: 'BS CpE Senior',
-        caption: 'Welcome to my engineering wall! Leave a doodle, a circuit sketch, or your greetings.',
-        date: 'Host Note',
-        theme: 'theme-burgundy',
-        drawingText: 'Welcome! ☕',
-        drawingBg: '#ffffff',
-        drawingColor: '#7a1c2c'
-      },
-      {
-        id: 'seed-peer',
-        author: 'Fellow Engineer',
-        role: 'Visitor',
-        caption: 'Great work on the dual-spooling printing kiosk and sensor telemetry!',
-        date: 'Recent',
-        theme: 'theme-darkgreen',
-        drawingText: 'Nice Capstone! 💡',
-        drawingBg: '#ffffff',
-        drawingColor: '#0b2f24'
-      },
-      {
-        id: 'seed-iot',
-        author: 'Tech Visitor',
-        role: 'Visitor',
-        caption: 'The AquaSense Proteus telemetry simulation looks super clean.',
-        date: 'Recent',
-        theme: 'theme-blue',
-        drawingText: 'AquaSense ⚡',
-        drawingBg: '#000000',
-        drawingColor: '#38bdf8'
-      }
-    ];
-
-    // Helper: IDs of pins created in this browser session/client
-    const getMyPinIds = () => {
-      try {
-        const stored = localStorage.getItem('pia-my-pins');
-        return stored ? JSON.parse(stored) : [];
-      } catch (e) {
-        return [];
-      }
-    };
-
-    const addMyPinId = (id) => {
-      try {
-        const ids = getMyPinIds();
-        if (!ids.includes(id)) {
-          ids.push(id);
-          localStorage.setItem('pia-my-pins', JSON.stringify(ids));
-        }
-      } catch (e) {}
-    };
-
-    const removeMyPinId = (id) => {
-      try {
-        const ids = getMyPinIds().filter(i => i !== id);
-        localStorage.setItem('pia-my-pins', JSON.stringify(ids));
-      } catch (e) {}
-    };
-
-    // Helper: Owner mode check
-    const isOwnerActive = () => {
-      try {
-        return localStorage.getItem('pia-is-owner') === 'true';
-      } catch (e) {
-        return false;
-      }
-    };
-
-    const getStoredPins = () => {
-      try {
-        const stored = localStorage.getItem('pia-wall-pins');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch (e) {}
-      return defaultPins;
-    };
-
-    const renderWall = () => {
-      if (!wallContainer) return;
-      const pins = getStoredPins();
-      const myPinIds = getMyPinIds();
-      const isOwner = isOwnerActive();
-
-      if (wallCountBadge) {
-        wallCountBadge.textContent = `${pins.length} PIN${pins.length === 1 ? '' : 'S'} ON THE WALL`;
-      }
-
-      // Update Owner UI states
-      if (ownerStatusBadge) {
-        ownerStatusBadge.style.display = isOwner ? 'inline-flex' : 'none';
-      }
-      if (resetWallBtn) {
-        resetWallBtn.style.display = isOwner ? 'inline-flex' : 'none';
-      }
-      if (ownerBtnText) {
-        ownerBtnText.textContent = isOwner ? '🔓 Exit Owner' : '🔒 Owner Access';
-      }
-
-      wallContainer.innerHTML = '';
-      pins.forEach((pin, index) => {
-        const card = document.createElement('div');
-        card.className = `wall-pin-card is-inview ${pin.theme || 'theme-slate'}`;
-
-        const isMyPin = myPinIds.includes(pin.id);
-        const canDelete = isOwner || isMyPin;
-
-        let canvasContent = '';
-        if (pin.image) {
-          canvasContent = `<img class="wall-card-img" src="${pin.image}" alt="Sketch by ${pin.author}" />`;
-        } else if (pin.drawingHeart) {
-          canvasContent = `
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="${pin.drawingColor || '#3b1b54'}">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>`;
-        } else if (pin.drawingText) {
-          const fontSize = pin.drawingText.length > 15 ? '1.15rem' : pin.drawingText.length > 8 ? '1.65rem' : '2.35rem';
-          const isDarkSlate = pin.drawingBg === '#000000';
-          const textColor = pin.drawingColor || (isDarkSlate ? '#ffffff' : '#1c1c1c');
-          canvasContent = `<span class="wall-card-drawing-text" style="font-family: var(--font-display); font-size: ${fontSize}; font-style: italic; color: ${textColor}; font-weight: 600; text-align: center; padding: 0.5rem; line-height: 1.25; word-break: break-word;">${pin.drawingText}</span>`;
-        }
-
-        const initial = (pin.author || 'P').charAt(0).toUpperCase();
-
-        let deleteBtnHtml = '';
-        if (canDelete) {
-          const deleteTitle = isOwner && !isMyPin ? 'Owner Delete: Remove pin' : 'Delete your doodle';
-          const deleteClass = isOwner && !isMyPin ? 'owner-pin-delete' : 'my-pin-delete';
-          deleteBtnHtml = `<button class="wall-card-delete-btn ${deleteClass}" type="button" data-index="${index}" data-id="${pin.id}" title="${deleteTitle}">✕</button>`;
-        }
-
-        let myPinBadgeHtml = isMyPin ? `<span class="my-pin-tag">YOUR PIN</span>` : '';
-
-        card.innerHTML = `
-          ${myPinBadgeHtml}
-          ${deleteBtnHtml}
-          <div class="wall-card-canvas-box ${pin.drawingBg === '#000000' ? 'dark-slate' : ''}">
-            ${canvasContent}
-          </div>
-          <p class="wall-card-caption">${pin.caption || 'A sketch left on The Wall.'}</p>
-          <div class="wall-card-footer">
-            <div class="wall-card-avatar">${initial}</div>
-            <div class="wall-card-meta">
-              <span class="wall-card-author">${pin.author || 'Anonymous'}</span>
-              <span class="wall-card-date">${pin.date || 'Recent'}</span>
-            </div>
-          </div>
-        `;
-
-        wallContainer.appendChild(card);
-      });
-
-      // Attach delete click handlers with proper confirmation
-      wallContainer.querySelectorAll('.wall-card-delete-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-          e.stopPropagation();
-          const idx = parseInt(btn.dataset.index, 10);
-          const pinId = btn.dataset.id;
-          const currentPins = getStoredPins();
-          const targetPin = currentPins[idx];
-          if (!targetPin) return;
-
-          const isMyPin = myPinIds.includes(pinId);
-
-          let confirmMsg = 'Are you sure you want to delete your doodle from The Wall?';
-          if (isOwner && !isMyPin) {
-            confirmMsg = `Owner Moderation: Are you sure you want to remove the pin by "${targetPin.author || 'Visitor'}"?`;
-          }
-
-          if (window.confirm(confirmMsg)) {
-            currentPins.splice(idx, 1);
-            try {
-              localStorage.setItem('pia-wall-pins', JSON.stringify(currentPins));
-            } catch (err) {}
-            removeMyPinId(pinId);
-            renderWall();
-            if (status) status.textContent = isOwner && !isMyPin ? 'Pin removed by Owner.' : 'Your doodle was removed from The Wall.';
-          }
-        });
-      });
-    };
-
-    renderWall();
-
-    // Owner Access Button toggle handler
-    if (wallOwnerBtn) {
-      wallOwnerBtn.addEventListener('click', () => {
-        if (isOwnerActive()) {
-          try {
-            localStorage.removeItem('pia-is-owner');
-          } catch (e) {}
-          renderWall();
-          if (status) status.textContent = 'Owner mode deactivated. Switched to visitor view.';
+        if (from.x === to.x && from.y === to.y) {
+          padContext.beginPath();
+          padContext.arc(to.x, to.y, 1.2, 0, Math.PI * 2);
+          padContext.fill();
         } else {
-          const pass = window.prompt('Enter Website Owner Passcode (for Pia):');
-          if (pass && (pass.trim().toLowerCase() === 'pia2026' || pass.trim().toLowerCase() === 'pia')) {
-            try {
-              localStorage.setItem('pia-is-owner', 'true');
-            } catch (e) {}
-            renderWall();
-            alert('👑 Owner Mode activated! You now have full moderation controls and can reset or delete any pin.');
-          } else if (pass !== null) {
-            alert('Incorrect passcode. Owner mode requires Pia\'s passcode.');
-          }
+          padContext.beginPath();
+          padContext.moveTo(from.x, from.y);
+          padContext.lineTo(to.x, to.y);
+          padContext.stroke();
         }
-      });
-    }
+      };
 
-    // Reset Wall button handler (Protected: Owner Only)
-    if (resetWallBtn) {
-      resetWallBtn.addEventListener('click', () => {
-        if (!isOwnerActive()) {
-          alert('Only the website owner can reset The Wall.');
+      resizePad();
+      new ResizeObserver(resizePad).observe(wrapper);
+
+      pad.addEventListener('pointerdown', event => {
+        if (activePointer !== null || (event.pointerType === 'mouse' && event.button !== 0)) return;
+        activePointer = event.pointerId;
+        drawing = true;
+        previous = position(event);
+        pad.setPointerCapture(event.pointerId);
+        draw(previous, previous, event.pressure || 0.5);
+        wrapper.classList.add('has-drawing');
+        if (status) status.textContent = '';
+        window.dispatchEvent(new CustomEvent('pia-doodle-sync'));
+      });
+
+      pad.addEventListener('pointermove', event => {
+        if (!drawing || event.pointerId !== activePointer) return;
+        const point = position(event);
+        draw(previous, point, event.pressure || 0.5);
+        previous = point;
+        window.dispatchEvent(new CustomEvent('pia-doodle-sync'));
+      });
+
+      const stopDrawing = event => {
+        if (event.pointerId === activePointer) {
+          drawing = false;
+          previous = null;
+          activePointer = null;
+          window.dispatchEvent(new CustomEvent('pia-doodle-sync'));
+        }
+      };
+
+      pad.addEventListener('pointerup', stopDrawing);
+      pad.addEventListener('pointercancel', stopDrawing);
+      pad.addEventListener('lostpointercapture', stopDrawing);
+
+      document.querySelector('#clear-pad')?.addEventListener('click', () => {
+        padContext.clearRect(0, 0, pad.width, pad.height);
+        wrapper.classList.remove('has-drawing');
+        if (status) status.textContent = 'A fresh page, ready for a new stroke.';
+        window.dispatchEvent(new CustomEvent('pia-doodle-clear'));
+      });
+
+      document.querySelector('#save-pad')?.addEventListener('click', () => {
+        if (!wrapper.classList.contains('has-drawing')) {
+          if (status) status.textContent = 'Draw a line or sketch first, then save.';
           return;
         }
-        if (window.confirm('Owner Action: Are you sure you want to reset all pins to default? This will clear all visitor pins.')) {
-          try {
-            localStorage.removeItem('pia-wall-pins');
-          } catch (e) {}
-          renderWall();
-          if (status) status.textContent = 'The Wall has been reset to default pins by Owner.';
-        }
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = pad.width;
+        exportCanvas.height = pad.height;
+        const expCtx = exportCanvas.getContext('2d');
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        expCtx.fillStyle = isDark ? '#0e0e13' : '#f5f2eb';
+        expCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+        expCtx.drawImage(pad, 0, 0);
+
+        exportCanvas.toBlob(blob => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `pia-sketchbook-${Date.now()}.png`;
+          if (status) status.textContent = 'Your sketch was saved to downloads.';
+        }, 'image/png');
       });
     }
 
-    if (pinBtn) {
-      pinBtn.addEventListener('click', () => {
-        const pad = document.querySelector('#drawing-pad');
-        const padContext = pad?.getContext('2d');
-        const wrapper = pad?.parentElement;
-        const author = authorInput?.value.trim() || 'Fellow Engineer';
-        const note = noteInput?.value.trim() || 'Left a sketch on The Wall!';
-        const hasDrawing = wrapper ? wrapper.classList.contains('has-drawing') : false;
+    /* ==========================================================================
+       10. The Wall (Live Real-Time Doodle Preview + Global Community Cloud Sync)
+       ========================================================================== */
+    const initTheWall = () => {
+      const wallContainer = document.querySelector('#wall-cards-container');
+      const wallCountBadge = document.querySelector('#wall-count-badge');
+      const pinBtn = document.querySelector('#pin-pad-btn');
+      const authorInput = document.querySelector('#wall-author-name');
+      const noteInput = document.querySelector('#wall-note-text');
+      const wallOwnerBtn = document.querySelector('#wall-owner-btn');
+      const ownerBtnText = document.querySelector('#owner-btn-text');
+      const ownerStatusBadge = document.querySelector('#owner-status-badge');
+      const resetWallBtn = document.querySelector('#reset-wall-btn');
+      const status = document.querySelector('.pad-status');
 
-        let imageData = '';
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        if (hasDrawing && pad && padContext) {
-          const exportCanvas = document.createElement('canvas');
-          exportCanvas.width = pad.width;
-          exportCanvas.height = pad.height;
-          const expCtx = exportCanvas.getContext('2d');
-          expCtx.fillStyle = isDark ? '#0e0e12' : '#fbf9f4';
-          expCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-          expCtx.drawImage(pad, 0, 0);
-          imageData = exportCanvas.toDataURL('image/png');
+      // Live Doodle Elements on The Wall
+      const liveDoodleCard = document.querySelector('#live-doodle-card');
+      const liveMirrorCanvas = document.querySelector('#live-doodle-mirror-canvas');
+      const liveAuthorEl = document.querySelector('#live-doodle-author');
+      const liveCaptionEl = document.querySelector('#live-doodle-caption');
+      const liveAvatarEl = document.querySelector('#live-doodle-avatar');
+
+      // Cloud Sync Elements
+      const wallCloudBtn = document.querySelector('#wall-cloud-btn');
+      const cloudStatusBadge = document.querySelector('#cloud-status-badge');
+      const wallCloudModal = document.querySelector('#wall-cloud-modal');
+      const wallCloudModalClose = document.querySelector('#wall-cloud-modal-close');
+      const wallCloudModalBackdrop = document.querySelector('#wall-cloud-modal-backdrop');
+      const wallCloudUrlInput = document.querySelector('#wall-cloud-url-input');
+      const wallCloudSaveBtn = document.querySelector('#wall-cloud-save-btn');
+      const wallCloudDisconnectBtn = document.querySelector('#wall-cloud-disconnect-btn');
+
+      // Inter-tab Real-time Broadcast Sync
+      const wallBroadcast = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('pia-wall-broadcast') : null;
+      if (wallBroadcast) {
+        wallBroadcast.onmessage = (e) => {
+          if (e.data && e.data.type === 'wall-updated') {
+            renderWall();
+          }
+        };
+      }
+
+      // Default curated community pins
+      const defaultPins = [
+        {
+          id: 'seed-pia',
+          author: 'Pia Macabangon',
+          role: 'BS CpE Senior',
+          caption: 'Welcome to my engineering wall! Leave a doodle, a circuit sketch, or your greetings.',
+          date: 'Host Note',
+          theme: 'theme-burgundy',
+          drawingText: 'Welcome! ☕',
+          drawingBg: '#ffffff',
+          drawingColor: '#7a1c2c'
+        },
+        {
+          id: 'seed-peer',
+          author: 'Fellow Engineer',
+          role: 'Visitor',
+          caption: 'Great work on the dual-spooling printing kiosk and sensor telemetry!',
+          date: 'Recent',
+          theme: 'theme-darkgreen',
+          drawingText: 'Nice Capstone! 💡',
+          drawingBg: '#ffffff',
+          drawingColor: '#0b2f24'
+        },
+        {
+          id: 'seed-iot',
+          author: 'Tech Visitor',
+          role: 'Visitor',
+          caption: 'The AquaSense Proteus telemetry simulation looks super clean.',
+          date: 'Recent',
+          theme: 'theme-blue',
+          drawingText: 'AquaSense ⚡',
+          drawingBg: '#000000',
+          drawingColor: '#38bdf8'
+        }
+      ];
+
+      const getCloudUrl = () => {
+        let url = localStorage.getItem('pia-wall-cloud-url') || '';
+        if (!url) return '';
+        return url.trim().replace(/\/+$/, '').replace(/\.json$/, '');
+      };
+
+      const updateCloudBadge = () => {
+        const url = getCloudUrl();
+        if (cloudStatusBadge) {
+          cloudStatusBadge.style.display = url ? 'inline-flex' : 'none';
+        }
+        const btnText = document.querySelector('#wall-cloud-btn-text');
+        if (btnText) {
+          btnText.textContent = url ? '☁️ Cloud Active' : '☁️ Sync Online';
+        }
+      };
+
+      // Helper: IDs of pins created by this visitor on this browser
+      const getMyPinIds = () => {
+        try {
+          const stored = localStorage.getItem('pia-my-pins');
+          return stored ? JSON.parse(stored) : [];
+        } catch (e) {
+          return [];
+        }
+      };
+
+      const addMyPinId = (id) => {
+        try {
+          const ids = getMyPinIds();
+          if (!ids.includes(id)) {
+            ids.push(id);
+            localStorage.setItem('pia-my-pins', JSON.stringify(ids));
+          }
+        } catch (e) {}
+      };
+
+      const removeMyPinId = (id) => {
+        try {
+          const ids = getMyPinIds().filter(i => i !== id);
+          localStorage.setItem('pia-my-pins', JSON.stringify(ids));
+        } catch (e) {}
+      };
+
+      // Helper: Owner mode check
+      const isOwnerActive = () => {
+        try {
+          return localStorage.getItem('pia-is-owner') === 'true';
+        } catch (e) {
+          return false;
+        }
+      };
+
+      const getStoredPins = () => {
+        try {
+          const stored = localStorage.getItem('pia-wall-pins');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          }
+        } catch (e) {}
+        return defaultPins;
+      };
+
+      /* Live Real-Time Doodle Preview Controller */
+      const updateLiveDoodlePreview = () => {
+        if (!liveDoodleCard) return;
+        const padEl = document.querySelector('#drawing-pad');
+        const padWrap = padEl ? padEl.parentElement : null;
+        const hasDrawing = padWrap ? padWrap.classList.contains('has-drawing') : false;
+        const authorVal = authorInput ? authorInput.value.trim() : '';
+        const noteVal = noteInput ? noteInput.value.trim() : '';
+
+        if (hasDrawing || authorVal || noteVal) {
+          liveDoodleCard.style.display = 'flex';
+
+          if (liveAuthorEl) liveAuthorEl.textContent = authorVal || 'You (Drawing now...)';
+          if (liveAvatarEl) liveAvatarEl.textContent = (authorVal || 'Y').charAt(0).toUpperCase();
+          if (liveCaptionEl) liveCaptionEl.textContent = noteVal || 'Doodling on the pad above...';
+
+          if (hasDrawing && liveMirrorCanvas && padEl) {
+            const mCtx = liveMirrorCanvas.getContext('2d');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            mCtx.clearRect(0, 0, liveMirrorCanvas.width, liveMirrorCanvas.height);
+            mCtx.fillStyle = isDark ? '#0e0e13' : '#fbf9f4';
+            mCtx.fillRect(0, 0, liveMirrorCanvas.width, liveMirrorCanvas.height);
+            mCtx.drawImage(padEl, 0, 0, liveMirrorCanvas.width, liveMirrorCanvas.height);
+          }
+        } else {
+          liveDoodleCard.style.display = 'none';
+        }
+      };
+
+      window.addEventListener('pia-doodle-sync', updateLiveDoodlePreview);
+      window.addEventListener('pia-doodle-clear', () => {
+        if (liveDoodleCard) liveDoodleCard.style.display = 'none';
+      });
+      if (authorInput) authorInput.addEventListener('input', updateLiveDoodlePreview);
+      if (noteInput) noteInput.addEventListener('input', updateLiveDoodlePreview);
+
+      const renderWall = () => {
+        if (!wallContainer) return;
+        const pins = getStoredPins();
+        const myPinIds = getMyPinIds();
+        const isOwner = isOwnerActive();
+
+        if (wallCountBadge) {
+          wallCountBadge.textContent = `${pins.length} PIN${pins.length === 1 ? '' : 'S'} ON THE WALL`;
         }
 
-        const themes = ['theme-darkgreen', 'theme-blue', 'theme-purple', 'theme-burgundy', 'theme-slate'];
-        const chosenTheme = themes[Math.floor(Math.random() * themes.length)];
+        // Update Owner UI states
+        if (ownerStatusBadge) {
+          ownerStatusBadge.style.display = isOwner ? 'inline-flex' : 'none';
+        }
+        if (resetWallBtn) {
+          resetWallBtn.style.display = isOwner ? 'inline-flex' : 'none';
+        }
+        if (ownerBtnText) {
+          ownerBtnText.textContent = isOwner ? '🔓 Exit Owner' : '🔒 Owner Access';
+        }
 
-        const pinId = `pin-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+        updateCloudBadge();
 
-        const newPin = {
-          id: pinId,
-          author: author,
-          caption: note,
-          date: 'Just now',
-          theme: chosenTheme,
-          image: imageData,
-          drawingText: hasDrawing ? '' : `Sketch by ${author}`,
-          drawingBg: isDark ? '#000000' : '#ffffff',
-          drawingColor: isDark ? '#ffffff' : '#1c1c1c'
-        };
+        // Clear existing cards EXCEPT the live preview card
+        wallContainer.querySelectorAll('.wall-pin-card:not(#live-doodle-card)').forEach(c => c.remove());
 
-        const existing = getStoredPins();
-        existing.unshift(newPin);
+        pins.forEach((pin, index) => {
+          const card = document.createElement('div');
+          card.className = `wall-pin-card is-inview ${pin.theme || 'theme-slate'}`;
+
+          const isMyPin = myPinIds.includes(pin.id);
+          const canDelete = isOwner || isMyPin;
+
+          let canvasContent = '';
+          if (pin.image) {
+            canvasContent = `<img class="wall-card-img" src="${pin.image}" alt="Sketch by ${pin.author}" />`;
+          } else if (pin.drawingText) {
+            const fontSize = pin.drawingText.length > 15 ? '1.15rem' : pin.drawingText.length > 8 ? '1.65rem' : '2.35rem';
+            const isDarkSlate = pin.drawingBg === '#000000';
+            const textColor = pin.drawingColor || (isDarkSlate ? '#ffffff' : '#1c1c1c');
+            canvasContent = `<span class="wall-card-drawing-text" style="font-family: var(--font-display); font-size: ${fontSize}; font-style: italic; color: ${textColor}; font-weight: 600; text-align: center; padding: 0.5rem; line-height: 1.25; word-break: break-word;">${pin.drawingText}</span>`;
+          }
+
+          const initial = (pin.author || 'P').charAt(0).toUpperCase();
+
+          let deleteBtnHtml = '';
+          if (canDelete) {
+            const deleteTitle = isOwner && !isMyPin ? 'Owner Delete: Remove pin' : 'Delete your doodle';
+            const deleteClass = isOwner && !isMyPin ? 'owner-pin-delete' : 'my-pin-delete';
+            deleteBtnHtml = `<button class="wall-card-delete-btn ${deleteClass}" type="button" data-index="${index}" data-id="${pin.id}" data-cloud="${pin.cloudKey || ''}" title="${deleteTitle}">✕</button>`;
+          }
+
+          let myPinBadgeHtml = isMyPin ? `<span class="my-pin-tag">YOUR PIN</span>` : '';
+
+          card.innerHTML = `
+            ${myPinBadgeHtml}
+            ${deleteBtnHtml}
+            <div class="wall-card-canvas-box ${pin.drawingBg === '#000000' ? 'dark-slate' : ''}">
+              ${canvasContent}
+            </div>
+            <p class="wall-card-caption">${pin.caption || 'A sketch left on The Wall.'}</p>
+            <div class="wall-card-footer">
+              <div class="wall-card-avatar">${initial}</div>
+              <div class="wall-card-meta">
+                <span class="wall-card-author">${pin.author || 'Anonymous'}</span>
+                <span class="wall-card-date">${pin.date || 'Recent'}</span>
+              </div>
+            </div>
+          `;
+
+          wallContainer.appendChild(card);
+        });
+
+        // Delete button click listener
+        wallContainer.querySelectorAll('.wall-card-delete-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.index, 10);
+            const pinId = btn.dataset.id;
+            const cloudKey = btn.dataset.cloud;
+            const currentPins = getStoredPins();
+            const targetPin = currentPins[idx];
+            if (!targetPin) return;
+
+            const isMyPin = myPinIds.includes(pinId);
+            let confirmMsg = 'Are you sure you want to delete your doodle from The Wall?';
+            if (isOwner && !isMyPin) {
+              confirmMsg = `Owner Moderation: Are you sure you want to remove the pin by "${targetPin.author || 'Visitor'}"?`;
+            }
+
+            if (window.confirm(confirmMsg)) {
+              currentPins.splice(idx, 1);
+              try {
+                localStorage.setItem('pia-wall-pins', JSON.stringify(currentPins));
+              } catch (err) {}
+              removeMyPinId(pinId);
+
+              // Delete from cloud if synced
+              if (cloudKey) {
+                deletePinFromCloud(cloudKey);
+              }
+
+              renderWall();
+              if (wallBroadcast) wallBroadcast.postMessage({ type: 'wall-updated' });
+              if (status) status.textContent = isOwner && !isMyPin ? 'Pin removed by Owner.' : 'Your doodle was removed from The Wall.';
+            }
+          });
+        });
+      };
+
+      // Cloud Synchronizer Methods
+      const syncWithCloud = async () => {
+        const cloudUrl = getCloudUrl();
+        if (!cloudUrl) return;
 
         try {
-          localStorage.setItem('pia-wall-pins', JSON.stringify(existing));
+          const res = await fetch(`${cloudUrl}/pins.json`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && typeof data === 'object') {
+              const cloudPins = Object.keys(data).map(key => ({
+                ...data[key],
+                cloudKey: key
+              })).reverse();
+
+              const localPins = getStoredPins();
+              const cloudIds = new Set(cloudPins.map(p => p.id));
+              const unmergedLocal = localPins.filter(p => !cloudIds.has(p.id) && !p.id.startsWith('seed-'));
+
+              const merged = [...cloudPins, ...unmergedLocal];
+              localStorage.setItem('pia-wall-pins', JSON.stringify(merged));
+              renderWall();
+            }
+          }
+        } catch (e) {
+          console.warn('Cloud sync error:', e);
+        }
+      };
+
+      const pushPinToCloud = async (pin) => {
+        const cloudUrl = getCloudUrl();
+        if (!cloudUrl) return;
+        try {
+          const res = await fetch(`${cloudUrl}/pins.json`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pin)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.name) {
+              pin.cloudKey = data.name;
+              const pins = getStoredPins();
+              const match = pins.find(p => p.id === pin.id);
+              if (match) match.cloudKey = data.name;
+              localStorage.setItem('pia-wall-pins', JSON.stringify(pins));
+            }
+          }
+        } catch (e) {
+          console.warn('Failed pushing pin to cloud:', e);
+        }
+      };
+
+      const deletePinFromCloud = async (cloudKey) => {
+        const cloudUrl = getCloudUrl();
+        if (!cloudUrl || !cloudKey) return;
+        try {
+          await fetch(`${cloudUrl}/pins/${cloudKey}.json`, { method: 'DELETE' });
         } catch (e) {}
+      };
 
-        // Record this pin as created by THIS visitor so only they can delete it
-        addMyPinId(pinId);
+      const resetCloudWall = async () => {
+        const cloudUrl = getCloudUrl();
+        if (!cloudUrl) return;
+        try {
+          await fetch(`${cloudUrl}/pins.json`, { method: 'PUT', body: JSON.stringify({}) });
+        } catch (e) {}
+      };
 
-        renderWall();
+      // Cloud modal event handlers
+      if (wallCloudBtn) {
+        wallCloudBtn.addEventListener('click', () => {
+          if (!wallCloudModal) return;
+          if (wallCloudUrlInput) wallCloudUrlInput.value = getCloudUrl();
+          wallCloudModal.style.display = 'flex';
+          wallCloudModal.setAttribute('aria-hidden', 'false');
+        });
+      }
 
-        // Clear input and drawing slate
-        if (padContext && pad) {
-          padContext.clearRect(0, 0, pad.width, pad.height);
-        }
-        if (wrapper) {
-          wrapper.classList.remove('has-drawing');
-        }
-        if (authorInput) authorInput.value = '';
-        if (noteInput) noteInput.value = '';
-        if (status) status.textContent = '✨ Your sketch was successfully pinned on The Wall!';
+      const closeCloudModal = () => {
+        if (!wallCloudModal) return;
+        wallCloudModal.style.display = 'none';
+        wallCloudModal.setAttribute('aria-hidden', 'true');
+      };
 
-        const origHtml = pinBtn.innerHTML;
-        pinBtn.innerHTML = '<span>Pinned to Wall! ✨</span>';
-        setTimeout(() => { pinBtn.innerHTML = origHtml; }, 2000);
+      if (wallCloudModalClose) wallCloudModalClose.addEventListener('click', closeCloudModal);
+      if (wallCloudModalBackdrop) wallCloudModalBackdrop.addEventListener('click', closeCloudModal);
 
-        // Scroll smoothly to newly pinned item
-        setTimeout(() => {
-          document.querySelector('#wall-cards-container')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 150);
-      });
-    }
-  };
-  initTheWall();
+      if (wallCloudSaveBtn) {
+        wallCloudSaveBtn.addEventListener('click', () => {
+          const rawUrl = wallCloudUrlInput ? wallCloudUrlInput.value.trim() : '';
+          if (!rawUrl || !rawUrl.startsWith('http')) {
+            alert('Please enter a valid Firebase Realtime Database URL (e.g. https://your-project-default-rtdb.firebaseio.com)');
+            return;
+          }
+          const cleanUrl = rawUrl.replace(/\/+$/, '').replace(/\.json$/, '');
+          localStorage.setItem('pia-wall-cloud-url', cleanUrl);
+          updateCloudBadge();
+          closeCloudModal();
+          syncWithCloud();
+          alert('☁️ Cloud Sync Connected! All doodles will now sync across visitors worldwide.');
+        });
+      }
 
-  /* ==========================================================================
+      if (wallCloudDisconnectBtn) {
+        wallCloudDisconnectBtn.addEventListener('click', () => {
+          localStorage.removeItem('pia-wall-cloud-url');
+          if (wallCloudUrlInput) wallCloudUrlInput.value = '';
+          updateCloudBadge();
+          closeCloudModal();
+          alert('Switched back to local mode.');
+        });
+      }
+
+      // Initial wall render and cloud sync attempt
+      renderWall();
+      syncWithCloud();
+
+      // Poll cloud for new community pins every 30 seconds
+      setInterval(syncWithCloud, 30000);
+
+      // Owner Access button toggle handler
+      if (wallOwnerBtn) {
+        wallOwnerBtn.addEventListener('click', () => {
+          if (isOwnerActive()) {
+            try {
+              localStorage.removeItem('pia-is-owner');
+            } catch (e) {}
+            renderWall();
+            if (status) status.textContent = 'Owner mode deactivated. Switched to visitor view.';
+          } else {
+            const pass = window.prompt('Enter Website Owner Passcode (for Pia):');
+            if (pass && (pass.trim().toLowerCase() === 'pia2026' || pass.trim().toLowerCase() === 'pia')) {
+              try {
+                localStorage.setItem('pia-is-owner', 'true');
+              } catch (e) {}
+              renderWall();
+              alert('👑 Owner Mode activated! You now have full moderation controls and can reset or delete any pin.');
+            } else if (pass !== null) {
+              alert('Incorrect passcode. Owner mode requires Pia\'s passcode.');
+            }
+          }
+        });
+      }
+
+      // Reset Wall button handler (Protected: Owner Only)
+      if (resetWallBtn) {
+        resetWallBtn.addEventListener('click', () => {
+          if (!isOwnerActive()) {
+            alert('Only the website owner can reset The Wall.');
+            return;
+          }
+          if (window.confirm('Owner Action: Are you sure you want to reset all pins to default? This will clear all visitor pins.')) {
+            try {
+              localStorage.removeItem('pia-wall-pins');
+            } catch (e) {}
+            resetCloudWall();
+            renderWall();
+            if (wallBroadcast) wallBroadcast.postMessage({ type: 'wall-updated' });
+            if (status) status.textContent = 'The Wall has been reset to default pins by Owner.';
+          }
+        });
+      }
+
+      // Pin button handler
+      if (pinBtn) {
+        pinBtn.addEventListener('click', () => {
+          const padEl = document.querySelector('#drawing-pad');
+          const padWrap = padEl?.parentElement;
+          const author = authorInput?.value.trim() || 'Fellow Engineer';
+          const note = noteInput?.value.trim() || 'Left a sketch on The Wall!';
+          const hasDrawing = padWrap ? padWrap.classList.contains('has-drawing') : false;
+
+          let imageData = '';
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+          if (hasDrawing && padEl) {
+            // Compress to crisp 320x200 thumbnail to ensure rapid loading and light storage
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = 320;
+            exportCanvas.height = 200;
+            const expCtx = exportCanvas.getContext('2d');
+            expCtx.fillStyle = isDark ? '#0e0e13' : '#fbf9f4';
+            expCtx.fillRect(0, 0, 320, 200);
+            expCtx.drawImage(padEl, 0, 0, 320, 200);
+            imageData = exportCanvas.toDataURL('image/webp', 0.85) || exportCanvas.toDataURL('image/png');
+          }
+
+          const themes = ['theme-darkgreen', 'theme-blue', 'theme-purple', 'theme-burgundy', 'theme-slate'];
+          const chosenTheme = themes[Math.floor(Math.random() * themes.length)];
+          const pinId = `pin-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+          const newPin = {
+            id: pinId,
+            author: author,
+            caption: note,
+            date: 'Just now',
+            theme: chosenTheme,
+            image: imageData,
+            drawingText: hasDrawing ? '' : `Sketch by ${author}`,
+            drawingBg: isDark ? '#000000' : '#ffffff',
+            drawingColor: isDark ? '#ffffff' : '#1c1c1c'
+          };
+
+          const existing = getStoredPins();
+          existing.unshift(newPin);
+
+          try {
+            localStorage.setItem('pia-wall-pins', JSON.stringify(existing));
+          } catch (e) {}
+
+          // Record this pin as created by THIS visitor
+          addMyPinId(pinId);
+
+          // Push to global cloud if connected
+          pushPinToCloud(newPin);
+
+          // Hide and reset the live preview card
+          if (liveDoodleCard) {
+            liveDoodleCard.style.display = 'none';
+          }
+
+          renderWall();
+
+          // Broadcast to other open tabs
+          if (wallBroadcast) wallBroadcast.postMessage({ type: 'wall-updated' });
+
+          // Clear drawing slate and inputs
+          const padCtx = padEl?.getContext('2d');
+          if (padCtx && padEl) {
+            padCtx.clearRect(0, 0, padEl.width, padEl.height);
+          }
+          if (padWrap) {
+            padWrap.classList.remove('has-drawing');
+          }
+          if (authorInput) authorInput.value = '';
+          if (noteInput) noteInput.value = '';
+          if (status) status.textContent = '✨ Your sketch was successfully pinned on The Wall!';
+
+          const origHtml = pinBtn.innerHTML;
+          pinBtn.innerHTML = '<span>Pinned to Wall! ✨</span>';
+          setTimeout(() => { pinBtn.innerHTML = origHtml; }, 2000);
+
+          // Smoothly scroll to the newly added pin
+          setTimeout(() => {
+            document.querySelector('#wall-cards-container')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 150);
+        });
+      }
+    };
+    initTheWall();
+
+
+    /* ==========================================================================
      11. Scroll-Triggered Hand-Drawn Sketch Animation Engine
      ========================================================================== */
     const initSketchAnimations = () => {
