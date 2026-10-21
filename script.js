@@ -591,18 +591,18 @@
         };
       }
 
-      // Default curated community pins
+      // Default curated community pins (Host Note by Pia Macabangon is #1)
       const defaultPins = [
         {
           id: 'seed-pia',
           author: 'Pia Macabangon',
           role: 'BS CpE Senior',
-          caption: 'Welcome to my engineering wall! Leave a doodle, a circuit sketch, or your greetings.',
+          caption: 'Welcome to my portfolio!',
           date: 'Host Note',
           theme: 'theme-burgundy',
-          drawingText: 'Welcome! ☕',
-          drawingBg: '#ffffff',
-          drawingColor: '#7a1c2c'
+          drawingText: "Pia's Studio 🚀",
+          drawingBg: '#0e0e13',
+          drawingColor: '#f59e0b'
         },
         {
           id: 'seed-peer',
@@ -669,10 +669,104 @@
           const stored = localStorage.getItem('pia-wall-pins');
           if (stored) {
             const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              // Ensure Pia's official host note is always updated to latest
+              const piaSeed = parsed.find(p => p.id === 'seed-pia');
+              if (piaSeed) {
+                piaSeed.caption = 'Welcome to my portfolio!';
+                piaSeed.drawingText = "Pia's Studio 🚀";
+                piaSeed.drawingBg = '#0e0e13';
+                piaSeed.drawingColor = '#f59e0b';
+              } else {
+                parsed.unshift(defaultPins[0]);
+              }
+              return parsed;
+            }
           }
         } catch (e) {}
         return defaultPins;
+      };
+
+      // Background Global Firebase Realtime Database Engine
+      const FIREBASE_URL = 'https://pia-portfolio-default-rtdb.firebaseio.com';
+
+      const fetchCloudPins = async () => {
+        try {
+          const res = await fetch(`${FIREBASE_URL}/pins.json`);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            const cloudPins = Object.keys(data).map(key => ({
+              ...data[key],
+              cloudKey: key
+            })).reverse();
+
+            const localPins = getStoredPins();
+            const hostNote = defaultPins[0];
+            const cloudIds = new Set(cloudPins.map(p => p.id));
+            const unmergedLocal = localPins.filter(p => !cloudIds.has(p.id) && p.id !== 'seed-pia');
+
+            // Combine: Host Note first, followed by cloud community pins and any unmerged local custom pins
+            const combined = [hostNote, ...cloudPins.filter(p => p.id !== 'seed-pia'), ...unmergedLocal];
+            try {
+              localStorage.setItem('pia-wall-pins', JSON.stringify(combined));
+            } catch (e) {}
+            renderWall();
+          }
+        } catch (err) {
+          // Graceful silent fallback
+        }
+      };
+
+      const pushPinToCloud = async (pin) => {
+        try {
+          const res = await fetch(`${FIREBASE_URL}/pins.json`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pin)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.name) {
+              pin.cloudKey = data.name;
+              const pins = getStoredPins();
+              const match = pins.find(p => p.id === pin.id);
+              if (match) match.cloudKey = data.name;
+              try {
+                localStorage.setItem('pia-wall-pins', JSON.stringify(pins));
+              } catch (e) {}
+            }
+          }
+        } catch (err) {}
+      };
+
+      const deletePinFromCloud = async (pinId, cloudKey) => {
+        try {
+          if (cloudKey) {
+            await fetch(`${FIREBASE_URL}/pins/${cloudKey}.json`, { method: 'DELETE' });
+          } else {
+            const res = await fetch(`${FIREBASE_URL}/pins.json`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data) {
+                const key = Object.keys(data).find(k => data[k] && data[k].id === pinId);
+                if (key) {
+                  await fetch(`${FIREBASE_URL}/pins/${key}.json`, { method: 'DELETE' });
+                }
+              }
+            }
+          }
+        } catch (err) {}
+      };
+
+      const resetCloudWall = async () => {
+        try {
+          await fetch(`${FIREBASE_URL}/pins.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+        } catch (err) {}
       };
 
       /* Live Real-Time Doodle Preview Controller */
@@ -758,7 +852,7 @@
           if (canDelete) {
             const deleteTitle = isOwner && !isMyPin ? 'Owner Delete: Remove pin' : 'Delete your doodle';
             const deleteClass = isOwner && !isMyPin ? 'owner-pin-delete' : 'my-pin-delete';
-            deleteBtnHtml = `<button class="wall-card-delete-btn ${deleteClass}" type="button" data-index="${index}" data-id="${pin.id}" title="${deleteTitle}">✕</button>`;
+            deleteBtnHtml = `<button class="wall-card-delete-btn ${deleteClass}" type="button" data-index="${index}" data-id="${pin.id}" data-cloud="${pin.cloudKey || ''}" title="${deleteTitle}">✕</button>`;
           }
 
           let myPinBadgeHtml = isMyPin ? `<span class="my-pin-tag">YOUR PIN</span>` : '';
@@ -799,11 +893,15 @@
             }
 
             if (window.confirm(confirmMsg)) {
+              const cloudKey = btn.dataset.cloud || targetPin.cloudKey;
               currentPins.splice(idx, 1);
               try {
                 localStorage.setItem('pia-wall-pins', JSON.stringify(currentPins));
               } catch (err) {}
               removeMyPinId(pinId);
+
+              // Background delete from Firebase
+              deletePinFromCloud(pinId, cloudKey);
 
               renderWall();
               if (wallBroadcast) wallBroadcast.postMessage({ type: 'wall-updated' });
@@ -813,8 +911,13 @@
         });
       };
 
-      // Initial wall render
+      // Initial wall render and background cloud sync
       renderWall();
+      fetchCloudPins();
+
+      // Poll cloud every 6 seconds for community doodles in the background
+      setInterval(fetchCloudPins, 6000);
+      window.addEventListener('focus', fetchCloudPins);
 
       // Owner Access button toggle handler
       if (wallOwnerBtn) {
@@ -851,6 +954,7 @@
             try {
               localStorage.removeItem('pia-wall-pins');
             } catch (e) {}
+            resetCloudWall();
             renderWall();
             if (wallBroadcast) wallBroadcast.postMessage({ type: 'wall-updated' });
             if (status) status.textContent = 'The Wall has been reset to default pins by Owner.';
@@ -907,6 +1011,9 @@
 
           // Record this pin as created by THIS visitor
           addMyPinId(pinId);
+
+          // Push to Firebase Realtime Database in background
+          pushPinToCloud(newPin);
 
           // Hide and reset the live preview card
           if (liveDoodleCard) {
