@@ -710,31 +710,54 @@
       // Background Global Firebase Realtime Database Engine
       const FIREBASE_URL = 'https://pia-portfolio-default-rtdb.firebaseio.com';
 
+      // Temporary local pending uploads waiting to sync to cloud
+      const pendingUploads = new Map();
+
       const fetchCloudPins = async () => {
         try {
           const res = await fetch(`${FIREBASE_URL}/pins.json`);
           if (!res.ok) return;
           const data = await res.json();
 
-          // Handle null or empty database safely without throwing
+          // All community pins currently alive in Firebase Cloud
           const cloudPins = (data && typeof data === 'object')
             ? Object.keys(data).map(key => ({ ...data[key], cloudKey: key })).reverse()
             : [];
 
-          const deletedIds = new Set(getDeletedPinIds());
-          const activeCloudPins = cloudPins.filter(p => p && p.id && !deletedIds.has(p.id) && p.id !== 'seed-pia');
+          const cloudPinIds = new Set(cloudPins.map(p => p.id));
 
-          // Pending local pins waiting to sync (created on this device only)
-          const localPins = getStoredPins();
-          const cloudIds = new Set(activeCloudPins.map(p => p.id));
-          const myPinIds = new Set(getMyPinIds());
-          const pendingLocal = localPins.filter(p => myPinIds.has(p.id) && !cloudIds.has(p.id) && !deletedIds.has(p.id) && p.id !== 'seed-pia');
+          // Clean up pendingUploads if already in cloud or older than 15 seconds
+          const now = Date.now();
+          for (const [id, item] of pendingUploads.entries()) {
+            if (cloudPinIds.has(id) || (now - item.timestamp > 15000)) {
+              pendingUploads.delete(id);
+            }
+          }
 
-          // Definitive pin list: Official Host Note, followed by pending local pins, and active cloud community pins
-          const combined = [defaultPins[0], ...pendingLocal, ...activeCloudPins];
+          // If a pin created by this visitor is NO LONGER in the cloud and not pending,
+          // it means the Owner deleted it! Remove it from myPinIds so it is completely gone!
+          const currentMyPins = getMyPinIds();
+          const validMyPins = currentMyPins.filter(id => cloudPinIds.has(id) || pendingUploads.has(id));
+          try {
+            localStorage.setItem('pia-my-pins', JSON.stringify(validMyPins));
+          } catch (e) {}
+
+          // Fresh pending local pins that were just created and waiting for Firebase response
+          const pendingList = Array.from(pendingUploads.values()).map(v => v.pin);
+
+          // The Wall ONLY displays: Host Note #1, fresh pending pins, and active Cloud Pins
+          // If the Owner deleted a pin, it is NOT in cloudPins and NOT in pendingUploads,
+          // so it DISAPPEARS FROM EVERYONE'S SCREEN, INCLUDING THE VISITOR'S!
+          const combined = [
+            defaultPins[0],
+            ...pendingList.filter(p => !cloudPinIds.has(p.id)),
+            ...cloudPins.filter(p => p.id !== 'seed-pia')
+          ];
+
           try {
             localStorage.setItem('pia-wall-pins', JSON.stringify(combined));
           } catch (e) {}
+
           renderWall();
         } catch (err) {
           // Graceful silent fallback
@@ -942,9 +965,12 @@
       renderWall();
       fetchCloudPins();
 
-      // Poll cloud every 6 seconds for community doodles in the background
-      setInterval(fetchCloudPins, 6000);
+      // Poll cloud every 3.5 seconds for community doodles in the background
+      setInterval(fetchCloudPins, 3500);
       window.addEventListener('focus', fetchCloudPins);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) fetchCloudPins();
+      });
 
       // Owner Access button toggle handler
       if (wallOwnerBtn) {
@@ -1031,8 +1057,11 @@
             drawingColor: isDark ? '#ffffff' : '#1c1c1c'
           };
 
+          // Record in pending uploads so it renders immediately
+          pendingUploads.set(pinId, { pin: newPin, timestamp: Date.now() });
+
           const existing = getStoredPins();
-          existing.unshift(newPin);
+          existing.splice(1, 0, newPin);
 
           try {
             localStorage.setItem('pia-wall-pins', JSON.stringify(existing));
