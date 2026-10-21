@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio — Pia Macabangon</title>
+  <meta name="description" content="Meet Pia Macabangon: BS Computer Engineering student based in the Philippines. Biography, student journey, daily setup, and interactive sketchpad.">
+  <link rel="icon" href="images/profile/pfp-latest.jpg" type="image/jpeg">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+  <link rel="stylesheet" href="style.css">
+  <script src="profile.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body class="grain-overlay">
+
+
+  <!-- TOP RUNNING ISSUE BAR -->
+  <div class="top-issue-bar">
+    <div class="container-editorial">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid rgba(15, 15, 17, 0.15); padding-bottom: 0.35rem;">
+        <div style="display: flex; gap: 1.5rem; align-items: baseline;" class="meta-mono">
+          <span class="text-ink font-semibold">PM · PORTFOLIO</span>
+          <span style="opacity: 0.5;">·</span>
+          <span>Story, Setup &amp; Drawing Canvas</span>
+        </div>
+        <div style="display: flex; gap: 1.5rem; align-items: baseline;" class="meta-mono">
+          <span id="live-clock" class="text-ink">12:00:00 PM PHT</span>
+          <span style="opacity: 0.5;">·</span>
+          <span id="current-date-meta" class="text-ink">12 OCTOBER 2026</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="container-editorial">
+      <div class="header-inner">
+        <a class="wordmark" href="index.html" aria-label="Pia Macabangon — Home">
+          <span class="wordmark-title">pia.dev<span class="badge-brand-tag">[CpE]</span></span>
+          <span class="wordmark-meta">Computer Engineering &middot; ICCT Colleges</span>
+        </a>
+
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a class="nav-link" href="index.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Index</span>
+          </a>
+          <a class="nav-link" href="index.html#projects">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            <span>Projects</span>
+          </a>
+          <a class="nav-link" href="index.html#stack">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+            <span>Skills</span>
+          </a>
+          <a class="nav-link" href="index.html#the-wall">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+            <span>The Wall</span>
+          </a>
+          <a class="nav-link" href="index.html#contact">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <span>Contact</span>
+          </a>
+        </nav>
+
+        <!-- Upper Right Actions (Theme Switch + Mobile Menu) -->
+        <div class="header-actions">
+          <button id="theme-toggle" class="theme-toggle-btn" type="button" aria-label="Toggle dark / light mode" title="Toggle dark / light mode">
+            <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+
+          <!-- Mobile Menu Trigger -->
+          <button id="mobile-menu-btn" class="mobile-menu-btn" type="button" aria-label="Open menu">
+            <span class="meta-mono">Menu</span>
+            <span aria-hidden="true">☰</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mobile-nav-drawer" class="mobile-nav-drawer">
+      <a class="nav-link" href="index.html">
+        <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Index</span>
+      </a>
+      <a class="nav-link" href="index.html#projects">
+        <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        <span>Projects</span>
+      </a>
+      <a class="nav-link" href="index.html#stack">
+        <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+        <span>Skills</span>
+      </a>
+      <a class="nav-link" href="index.html#the-wall">
+        <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        <span>The Wall</span>
+      </a>
+      <a class="nav-link" href="index.html#contact">
+        <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <span>Contact</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ABOUT SECTION LAYOUT (canvas-design layout) -->
+    <section class="section-editorial" style="padding-top: 3.5rem;">
+      <div class="container-editorial">
+
+        <div class="hero-grid">
+
+          <!-- Left Column: Bio Narrative -->
+          <div>
+            <div>
+              <div class="section-eyebrow">
+                <span class="meta-mono text-oxblood font-semibold">01</span>
+                <span class="eyebrow-line"></span>
+                <span class="label-eyebrow">Behind the keyboard</span>
+              </div>
+
+              <h1 class="font-display" style="font-size: clamp(2.5rem, 5.5vw, 4.5rem); font-weight: 400; line-height: 1; letter-spacing: -0.035em; color: var(--color-ink); margin: 0 0 1.5rem;">
+                Hello,<br>
+                I'm <span class="display-italic" style="color: var(--color-oxblood);">Pia.</span>
+              </h1>
+
+              <div style="display: flex; flex-direction: column; gap: 1.25rem; font-size: 1.0625rem; line-height: 1.65; color: var(--color-ink);">
+                <p>
+                  I am a <strong>4th Year BS Computer Engineering student</strong> at <strong>ICCT Colleges Inc.</strong> based in the <strong>Philippines</strong>, passionate about software development, systems programming, and modern web applications.
+                </p>
+                <p>
+                  My engineering journey bridges both hardware and software: from understanding low-level computing architectures and microcontroller interfaces (ESP32, Arduino) to architecting full-stack web applications and interactive client tools.
+                </p>
+                <p>
+                  I believe the best way to master engineering is by building things that solve genuine problems. Through academic laboratories, capstone projects, and independent coding, I continually explore algorithms, database architecture, and user ergonomics.
+                </p>
+                <p style="color: var(--color-ash);">
+                  Always curious, continuously learning, and enthusiastic about software craftsmanship and engineering design.
+                </p>
+              </div>
+
+              <!-- Signature SVG (from canvas-design) -->
+              <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
+                <span class="font-display italic text-2xl" style="color: var(--color-ink);">Pia Macabangon</span>
+                <svg width="120" height="28" viewBox="0 0 130 30" fill="none" stroke="var(--color-oxblood)" stroke-width="1.6" stroke-linecap="round">
+                  <path d="M3 18c39-19 63 8 117-9M11 25c35-12 73-5 101-13"/>
+                </svg>
+              </div>
+
+
+            </div>
+          </div>
+
+          <!-- Right Column: Profile Card with Tape -->
+          <div>
+            <div class="art-sheet profile-folio-card" style="max-width: 380px; margin: 0 auto;">
+              <span class="paper-tape" aria-hidden="true"></span>
+
+              <div class="card-top-bar meta-mono">
+                <span class="text-oxblood font-semibold">PORTFOLIO MONOGRAM</span>
+                <span>ICCT COLLEGES &middot; 4TH YEAR</span>
+              </div>
+
+              <div class="profile-avatar-frame" style="max-height: 380px; aspect-ratio: 1 / 1; border-radius: 6px;">
+                <img id="profile-avatar-img" src="images/profile/pfp-latest.jpg" alt="Pia Macabangon portrait" width="700" height="735" style="object-fit: cover; object-position: center top;">
+              </div>
+
+              <div style="margin-top: 1.25rem;">
+                <span class="meta-mono text-ash block">ACADEMIC DISCIPLINE</span>
+                <span class="font-display" style="font-size: 1.25rem; color: var(--color-ink); margin-top: 0.2rem; display: block;">
+                  BS Computer Engineering &middot; 4th Year Senior
+                </span>
+              </div>
+
+              <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(15, 15, 17, 0.12); display: flex; align-items: center; justify-content: space-between;">
+                <span class="hand-note" style="font-size: 0.8125rem;">a few lines, a whole system.</span>
+                <span class="meta-mono text-oxblood">MMXXVI</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 02: DAILY SETUP & USES -->
+    <section class="section-editorial" id="uses">
+      <div class="container-editorial">
+
+        <div class="section-header-grid">
+          <div>
+            <div class="section-eyebrow">
+              <span class="meta-mono text-oxblood font-semibold">02</span>
+              <span class="eyebrow-line"></span>
+              <span class="label-eyebrow">Portfolio Inventory (/uses)</span>
+            </div>
+            <h2 class="section-headline">
+              Daily tools, hardware &amp; <span class="display-italic">workspace.</span>
+            </h2>
+            <p class="section-desc">
+              The everyday hardware, software environment, and tools powering my engineering studies and coding sessions.
+            </p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+          
+          <div style="border-top: 1px solid rgba(15, 15, 17, 0.15); padding-top: 1.25rem;">
+            <span class="meta-mono text-oxblood">WORKSTATION &amp; HARDWARE</span>
+            <h3 class="font-display" style="font-size: 1.35rem; margin: 0.5rem 0 0.5rem;">Machine &amp; Peripherals</h3>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; color: var(--color-ash); font-size: 0.9375rem;">
+              <li>&bull; <strong class="text-ink">Operating System:</strong> Windows 11 &amp; WSL Linux environment</li>
+              <li>&bull; <strong class="text-ink">Display:</strong> Multi-monitor setup for code editing and documentation</li>
+              <li>&bull; <strong class="text-ink">Keyboard:</strong> Comfortable tactile mechanical switches</li>
+            </ul>
+          </div>
+
+          <div style="border-top: 1px solid rgba(15, 15, 17, 0.15); padding-top: 1.25rem;">
+            <span class="meta-mono text-oxblood">EDITOR &amp; TERMINAL</span>
+            <h3 class="font-display" style="font-size: 1.35rem; margin: 0.5rem 0 0.5rem;">Code Environment</h3>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; color: var(--color-ash); font-size: 0.9375rem;">
+              <li>&bull; <strong class="text-ink">IDE:</strong> VS Code for Web &amp; Python, IntelliJ/CLion for Java &amp; C++</li>
+              <li>&bull; <strong class="text-ink">Terminal:</strong> Windows Terminal with PowerShell &amp; Bash</li>
+              <li>&bull; <strong class="text-ink">Font:</strong> JetBrains Mono with coding ligatures</li>
+            </ul>
+          </div>
+
+          <div style="border-top: 1px solid rgba(15, 15, 17, 0.15); padding-top: 1.25rem;">
+            <span class="meta-mono text-oxblood">LEARNING &amp; PRODUCTIVITY</span>
+            <h3 class="font-display" style="font-size: 1.35rem; margin: 0.5rem 0 0.5rem;">Daily Utilities</h3>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; color: var(--color-ash); font-size: 0.9375rem;">
+              <li>&bull; <strong class="text-ink">Version Control:</strong> Git &amp; GitHub for repository management</li>
+              <li>&bull; <strong class="text-ink">API Testing:</strong> Postman for REST API endpoints</li>
+              <li>&bull; <strong class="text-ink">Documentation:</strong> Notion &amp; Markdown for lecture notes and task tracking</li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 03: EDUCATIONAL BACKGROUND -->
+    <section class="section-editorial" id="experience" style="background-color: var(--color-paper); border-top: 1px solid rgba(15, 15, 17, 0.15);">
+      <div class="container-editorial">
+
+        <div class="section-header-grid">
+          <div>
+            <div class="section-eyebrow">
+              <span class="meta-mono text-oxblood font-semibold">03</span>
+              <span class="eyebrow-line"></span>
+              <span class="label-eyebrow">Academic Path</span>
+            </div>
+            <h2 class="section-headline">
+              Educational <span class="display-italic">Background.</span>
+            </h2>
+            <p class="section-desc">
+              Four years of focused academic training in Computer Engineering at ICCT Colleges Inc., developing core proficiencies in hardware systems, computer architecture, and software design.
+            </p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <span class="meta-mono text-ash">DEGREE PROGRAM</span>
+            <span class="font-display" style="font-size: 1.25rem;">BS Computer Engineering</span>
+            <span class="meta-mono" style="color: var(--color-oxblood);">2023 &mdash; PRESENT</span>
+          </div>
+        </div>
+
+        <!-- Experience / Academic List -->
+        <ul class="experience-list">
+          <li class="experience-item">
+            <button class="experience-item-btn exp-toggle-btn" type="button" aria-expanded="true" aria-controls="exp-degree">
+              <span class="experience-num">01</span>
+              <div class="experience-main">
+                <h3 class="experience-title">Bachelor of Science in Computer Engineering</h3>
+                <p class="experience-role-subtitle">ICCT Colleges Inc. &middot; Cainta, Rizal, Philippines</p>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 1rem;">
+                <span class="experience-dates">2023 &mdash; 2027</span>
+                <span class="meta-mono text-oxblood" style="font-size: 0.9rem;">&plusmn;</span>
+              </div>
+            </button>
+
+            <div id="exp-degree" class="experience-details">
+              <div>
+                <p style="font-size: 1rem; line-height: 1.6; color: var(--color-ink); margin: 0 0 1rem;">
+                  Senior-year student in Computer Engineering at ICCT Colleges Inc., mastering both computational theory and practical engineering lab practicums.
+                </p>
+                <ul class="experience-bullets">
+                  <li>Key coursework: <strong>Data Structures &amp; Algorithms</strong>, <strong>Object-Oriented Programming</strong>, <strong>Computer Architecture</strong>, <strong>Embedded Systems</strong>, and <strong>Software Engineering</strong>.</li>
+                  <li>Laboratory engineering experience interfacing <strong>microcontrollers (ESP32, Arduino)</strong> with sensors, actuators, and communication buses.</li>
+                  <li>Building responsive full-stack web applications and automation tools for engineering coursework.</li>
+                </ul>
+              </div>
+              <div style="border-left: 1px solid rgba(15, 15, 17, 0.15); padding-left: 1.5rem;" class="meta-mono">
+                <span style="color: var(--color-ash); display: block; margin-bottom: 0.25rem;">STATUS</span>
+                <span style="color: var(--color-ink); font-weight: 600;">4TH YEAR SENIOR</span>
+                <span style="color: var(--color-ash); display: block; margin-top: 1rem; margin-bottom: 0.25rem;">INSTITUTION</span>
+                <span style="color: var(--color-oxblood); font-weight: 600;">ICCT Colleges Inc.</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+      </div>
+    </section>
+
+    <!-- SECTION 04: TECHNICAL SKILLS (Interactive Icon Cards) -->
+    <section class="section-editorial" id="skills" style="background-color: var(--color-paper); padding: 5rem 0; border-top: 1px solid rgba(15, 15, 17, 0.15);">
+      <div class="container-editorial">
+
+        <div class="section-header-grid">
+          <div>
+            <div class="section-eyebrow">
+              <span class="meta-mono text-oxblood font-semibold">04</span>
+              <span class="eyebrow-line"></span>
+              <span class="label-eyebrow">Technical Toolkit</span>
+            </div>
+            <h2 class="section-headline">
+              Technical <span class="display-italic">Skills &amp; Technologies.</span>
+            </h2>
+            <p class="section-desc">
+              Core programming languages, embedded systems frameworks, database architectures, and developer tools cultivated through computer engineering studies.
+            </p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-end;">
+            <span class="meta-mono text-ash" style="font-size: 0.75rem;">TOOLSET REPERTOIRE</span>
+            <span class="meta-mono" style="color: var(--color-oxblood); font-weight: 600;">18 TECHNOLOGIES &amp; PLATFORMS</span>
+          </div>
+        </div>
+
+        <!-- Skills Grid with Icons & Hover Glows (Inspired by awrs.me) -->
+        <div class="skills-showcase-grid">
+
+          <!-- Row 1: Languages & Core -->
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #00599C;">
+              <!-- C++ -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M22.394 6.003L13.606.928a3.216 3.216 0 0 0-3.212 0L1.606 6.003A3.215 3.215 0 0 0 0 8.785v10.152a3.215 3.215 0 0 0 1.606 2.782l8.788 5.075a3.216 3.216 0 0 0 3.212 0l8.788-5.075A3.215 3.215 0 0 0 24 18.937V8.785a3.215 3.215 0 0 0-1.606-2.782zm-8.868 13.91l-4.526-2.613v-5.226l4.526-2.613 4.526 2.613v5.226l-4.526 2.613zm5.724-4.815h-1.05v1.05h-.9v-1.05h-1.05v-.9h1.05v-1.05h.9v1.05h1.05v.9zm3 0h-1.05v1.05h-.9v-1.05h-1.05v-.9h1.05v-1.05h.9v1.05h1.05v.9z"/></svg>
+            </div>
+            <span class="skill-label">C / C++</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #3776AB;">
+              <!-- Python -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M11.914 0C5.825 0 6.2 2.656 6.2 2.656l.006 2.752h5.812v.826H3.856S0 5.783 0 11.907c0 6.126 3.375 5.908 3.375 5.908h2.019v-2.833s-.11-3.38 3.32-3.38h5.688s3.211.053 3.211-3.109V2.656S18.17 0 11.914 0zm-3.23 1.848a1.052 1.052 0 1 1 0 2.105 1.052 1.052 0 0 1 0-2.105zm3.402 22.152c6.089 0 5.714-2.656 5.714-2.656l-.006-2.752H11.98v-.826h8.163s3.857.451 3.857-5.673c0-6.124-3.375-5.906-3.375-5.906h-2.02v2.833s.11 3.38-3.32 3.38H9.601s-3.212-.053-3.212 3.109v5.828s-.558 2.656 5.702 2.656zm3.23-1.848a1.052 1.052 0 1 1 0-2.105 1.052 1.052 0 0 1 0 2.105z"/></svg>
+            </div>
+            <span class="skill-label">Python</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #F89820;">
+              <!-- Java -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M8.851 18.56s-.917.534.653.714c2.054.237 4.908.19 7.087-.197 0 0 .749.49-.607.781-4.062.871-10.428.47-11.233-.564-.383-.49.336-.734 4.1-1.024zm-1.066-2.65s-1.053.64.498.818c2.204.254 5.922.254 8.653-.27 0 0 .584.455-.49.704-3.957.906-11.879.455-12.793-.574-.47-.527.733-.678 4.132-.968zm-.124-2.75s-2.585.808-.948 1.116c2.812.529 7.424.363 11.233-.245 0 0 .376.368-.456.635-4.524 1.458-13.882.253-14.282-.871-.247-.695.539-.635 4.453-.925zm9.566-5.875c.968 1.956-1.577 3.69-1.577 3.69s2.464-.694 1.577-2.666c-.84-1.87-2.434-2.85-2.434-2.85s3.238.293 2.434 2.826zm-4.33-7.285s3.298 3.199-2.844 7.641c-5.02 3.633-1.63 5.76-1.63 5.76s-1.88-1.554-.93-3.082c1.472-2.368 4.757-3.957 5.385-6.028.536-1.764.019-3.291.019-3.291zm7.39 12.338c2.476-1.286 2.476-2.79 2.476-2.79s-.35 1.187-2.709 1.89c-2.36.702-4.834.702-4.834.702s2.592.484 5.067.198zm-6.685 8.784c4.606-.328 8.448-1.74 8.524-2.909 0 0-.256.776-3.87 1.488-4.227.834-9.355.679-11.954.062 0 0 .693.945 7.3 1.359z"/></svg>
+            </div>
+            <span class="skill-label">Java</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #F7DF1E;">
+              <!-- JavaScript -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.621-1.797-.866-.347-.35-.347-.796-.347-1.127 0-.756.574-1.31 1.45-1.31.815 0 1.36.376 1.767 1.05.215-.145.89-.57 1.258-.802-.533-.872-1.483-1.463-3.003-1.463-1.82 0-3.076 1.114-3.076 2.766 0 1.248.665 2.19 2.42 2.92.83.35 1.417.653 1.62.946.33.486.234 1.127-.14 1.442-.516.438-1.557.438-2.19 0-.528-.363-.787-.847-1.026-1.467l-1.362.775c.42 1.093 1.34 1.942 2.784 2.133 2.14.28 3.585-.694 3.886-2.587zm-7.616-7.852H12.75v6.52c0 1.48-.68 2.062-1.87 2.062-.64 0-1.16-.145-1.52-.397v-1.31c.3.17.65.26 1.02.26.49 0 .79-.24.79-.89v-6.245z"/></svg>
+            </div>
+            <span class="skill-label">JavaScript</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #E34F26;">
+              <!-- HTML5 -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.565-2.438L1.5 0zm7.031 9.75l-.232-2.718 11.232.003.24-2.722H5.344l.71 8.156h8.423l-.337 3.771-2.14.579-2.14-.579-.137-1.536H7.135l.267 3.018 4.598 1.277 4.599-1.277.632-7.071H8.531z"/></svg>
+            </div>
+            <span class="skill-label">HTML5</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #1572B6;">
+              <!-- CSS3 -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.565-2.438L1.5 0zm17.09 4.313H5.41l.24 2.722h10.99l-.24 2.719H5.89l.24 2.722h7.625l-.337 3.771-1.418.384-1.419-.384-.09-.997H7.9l.178 2.008 3.922 1.089 3.921-1.089.54-6.042.24-2.722.289-3.181z"/></svg>
+            </div>
+            <span class="skill-label">CSS3</span>
+          </div>
+
+          <!-- Row 2: Frameworks & Web -->
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #61DAFB;">
+              <!-- React -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9.25a2.75 2.75 0 1 0 0 5.5 2.75 2.75 0 0 0 0-5.5zm0-9.25c-3.13 0-5.91.56-8.03 1.54C1.84 2.52.5 3.94.5 5.62c0 1.69 1.34 3.1 3.47 4.09C1.84 10.69.5 12.11.5 13.79c0 1.68 1.34 3.09 3.47 4.08-2.13.98-3.47 2.4-3.47 4.08 0 1.68 1.34 3.1 3.47 4.08 2.12.99 4.9 1.55 8.03 1.55s5.91-.56 8.03-1.55c2.13-.98 3.47-2.4 3.47-4.08 0-1.68-1.34-3.1-3.47-4.08 2.13-.99 3.47-2.4 3.47-4.08 0-1.68-1.34-3.1-3.47-4.09 2.13-.99 3.47-2.4 3.47-4.09 0-1.68-1.34-3.1-3.47-4.08C17.91.56 15.13 0 12 0zm0 1.88c2.81 0 5.25.49 7.02 1.33-1.42 1.83-4.04 3.13-7.02 3.52-2.98-.39-5.6-1.69-7.02-3.52C6.75 2.37 9.19 1.88 12 1.88z"/></svg>
+            </div>
+            <span class="skill-label">React</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #68A063;">
+              <!-- Node.js -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 10.97c-.03 0-.06 0-.08.01l-4.14 2.39c-.19.11-.31.32-.31.54v4.78c0 .22.12.43.31.54l4.14 2.39c.05.03.11.04.16.04s.11-.01.16-.04l4.14-2.39c.19-.11.31-.32.31-.54v-4.78c0-.22-.12-.43-.31-.54l-4.14-2.39a.37.37 0 0 0-.24-.06zm.08 9.25l-3.32-1.92v-3.83l3.32 1.92v3.83zm.84-4.32l3.32-1.92v3.83l-3.32 1.92v-3.83zm-.42-1.23l-3.32-1.92 3.32-1.92 3.32 1.92-3.32 1.92zM12 0L1.6 6v12L12 24l10.4-6V6L12 0zm8.8 17.08L12 22.16 3.2 17.08V6.92L12 1.84l8.8 5.08v10.16z"/></svg>
+            </div>
+            <span class="skill-label">Node.js</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #00758F;">
+              <!-- MySQL / SQL -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.48 3 2 4.79 2 7v10c0 2.21 4.48 4 10 4s10-1.79 10-4V7c0-2.21-4.48-4-10-4zm0 2c4.42 0 8 1.34 8 2s-3.58 2-8 2-8-1.34-8-2 3.58-2 8-2zm8 12c0 .66-3.58 2-8 2s-8-1.34-8-2v-2.34c1.88 1.09 4.78 1.84 8 1.84s6.12-.75 8-1.84V17zm0-5c0 .66-3.58 2-8 2s-8-1.34-8-2V9.66c1.88 1.09 4.78 1.84 8 1.84s6.12-.75 8-1.84V12z"/></svg>
+            </div>
+            <span class="skill-label">MySQL / SQL</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #777BB4;">
+              <!-- PHP -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C5.9 3 1 5.9 1 9.5c0 2.5 2.4 4.7 6.1 5.8l-.8 4.7h2.9l.6-3.8c.7.1 1.4.1 2.2.1 6.1 0 11-2.9 11-6.5S18.1 3 12 3zm-3.2 8.3h-1.5l1-5.6h1.5l-1 5.6zm4.7 0h-1.5l1-5.6h1.5l-1 5.6zm4.7 0h-1.5l1-5.6h1.5l-1 5.6z"/></svg>
+            </div>
+            <span class="skill-label">PHP</span>
+          </div>
+
+          <!-- Row 3: Hardware & Embedded Systems -->
+          <div class="skill-tile highlight-hardware">
+            <div class="skill-icon-wrapper" style="color: #00979D;">
+              <!-- Arduino -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 6C13.78 6 12 7.78 12 9.5c0-1.72-1.78-3.5-4.5-3.5C3.36 6 0 8.69 0 12s3.36 6 7.5 6c2.72 0 4.5-1.78 4.5-3.5 0 1.72 1.78 3.5 4.5 3.5 4.14 0 7.5-2.69 7.5-6s-3.36-6-7.5-6zm-9 10C4.47 16 2 14.21 2 12s2.47-4 5.5-4c1.94 0 3.32 1.13 3.48 2.65-.67.4-1.28.9-1.8 1.49H6.5v1.71h2.15c.23.47.53.9.89 1.28C9.28 15.68 8.08 16 7.5 16zm4-3.15H9.79c-.06-.29-.16-.57-.29-.85h2v.85zm5 3.15c-.58 0-1.78-.32-2.04-.87.36-.38.66-.81.89-1.28H17.5V12.15h-2.68c-.52-.59-1.13-1.09-1.8-1.49.16-1.52 1.54-2.66 3.48-2.66 3.03 0 5.5 1.79 5.5 4s-2.47 4-5.5 4zm1.5-3.15h-1.71v1.71h-1.58v-1.71h-1.71v-1.58h1.71V9.28h1.58v1.71H18v1.58z"/></svg>
+            </div>
+            <span class="skill-label">Arduino</span>
+          </div>
+
+          <div class="skill-tile highlight-hardware">
+            <div class="skill-icon-wrapper" style="color: #E7352C;">
+              <!-- ESP32 / Embedded Microcontrollers -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm2 4v2h2V6H6zm4 0v2h2V6h-2zm4 0v2h2V6h-2zm4 0v2h2V6h-2zM6 10v2h2v-2H6zm0 4v2h2v-2H6zm0 4v2h2v-2H6zm12-4v2h2v-2h-2zm0 4v2h2v-2h-2zm-6-4h4v4h-4v-4zm-2-2h8V8h-8v4z"/></svg>
+            </div>
+            <span class="skill-label">ESP32 / IoT</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #000000;">
+              <!-- GitHub -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            </div>
+            <span class="skill-label">GitHub</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #F05032;">
+              <!-- Git -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M21.62 10.38l-8-8a2.3 2.3 0 0 0-3.24 0L8.14 4.62l3.41 3.41a2.74 2.74 0 0 1 3.47 3.47l3.31 3.31a2.73 2.73 0 1 1-1.63 1.63l-3.07-3.07v4.61a2.73 2.73 0 1 1-2.31 0V13a2.74 2.74 0 0 1-1.47-3.6l-3.4-3.4-4.83 4.83a2.3 2.3 0 0 0 0 3.24l8 8a2.3 2.3 0 0 0 3.24 0l8-8a2.3 2.3 0 0 0 0-3.29z"/></svg>
+            </div>
+            <span class="skill-label">Git SCM</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #FCC624;">
+              <!-- Linux -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12.002 0c-2.48 0-4.49 2.01-4.49 4.49v.76c-.95.42-1.8 1.05-2.47 1.83-1.69 1.95-2.34 4.63-1.74 7.15.54 2.27 2.1 4.14 4.19 5.03v.25c0 2.48 2.01 4.49 4.51 4.49s4.51-2.01 4.51-4.49v-.25c2.09-.89 3.65-2.76 4.19-5.03.6-2.52-.05-5.2-1.74-7.15-.67-.78-1.52-1.41-2.47-1.83v-.76c0-2.48-2.01-4.49-4.49-4.49zm-1.8 6.49a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2zm3.6 0a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg>
+            </div>
+            <span class="skill-label">Linux CLI</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #F24E1E;">
+              <!-- Figma -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M8 24c2.2 0 4-1.8 4-4v-4H8c-2.2 0-4 1.8-4 4s1.8 4 4 4zM4 12c0-2.2 1.8-4 4-4h4v8H8c-2.2 0-4-1.8-4-4zm0-8c0-2.2 1.8-4 4-4h4v8H8c-2.2 0-4-1.8-4-4zm8-4h4c2.2 0 4 1.8 4 4s-1.8 4-4 4h-4V0zm0 8h4c2.2 0 4 1.8 4 4s-1.8 4-4 4h-4V8z"/></svg>
+            </div>
+            <span class="skill-label">Figma</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #007ACC;">
+              <!-- VS Code -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.27a1 1 0 0 0-.005 1.503l3.774 3.226-3.774 3.226a1 1 0 0 0 .005 1.503l1.322 1.212a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.94-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/></svg>
+            </div>
+            <span class="skill-label">VS Code</span>
+          </div>
+
+          <div class="skill-tile">
+            <div class="skill-icon-wrapper" style="color: #FFCA28;">
+              <!-- Firebase -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M3.89 15.672L6.255.461a.544.544 0 0 1 1.018-.135l2.793 5.347-6.176 10zm16.795 3.793l-1.92-11.834a.543.543 0 0 0-.912-.294L3.743 21.03l7.464 4.195a1.71 1.71 0 0 0 1.637 0l7.84-4.76zm-8.497-7.79l-2.072-3.96-5.83 11.233 7.902-7.273z"/></svg>
+            </div>
+            <span class="skill-label">Firebase</span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 05: SELECTED WORKS & PROJECTS -->
+    <section class="section-editorial" id="projects" style="background-color: var(--color-paper); padding: 5.5rem 0; border-top: 1px solid rgba(15, 15, 17, 0.15);">
+      <div class="container-editorial">
+
+        <div class="section-header-grid" style="margin-bottom: 3.5rem;">
+          <div>
+            <div class="section-eyebrow">
+              <span class="meta-mono text-oxblood font-semibold">05</span>
+              <span class="eyebrow-line"></span>
+              <span class="label-eyebrow">Selected Works &amp; Engineering</span>
+            </div>
+            <h2 class="section-headline">
+              Featured <span class="display-italic">Projects &amp; Systems.</span>
+            </h2>
+            <p class="section-desc">
+              Hardware prototypes, system architectures, and software applications built to explore embedded computing, sensor telemetry, and modern web tools.
+            </p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start;">
+            <span class="meta-mono text-ash" style="font-size: 0.75rem;">ARCHIVE STATUS</span>
+            <span class="font-display" style="font-size: 1.15rem; color: var(--color-ink); margin-top: 0.25rem;">
+              03 Active Case Studies
+            </span>
+          </div>
+        </div>
+
+        <div class="projects-grid">
+
+          <!-- PROJECT 01: Self-Service Printing Kiosk -->
+          <article class="project-card">
+            <div class="project-thumb-frame" onclick="window.location.href='projects/printing-kiosk.html'">
+              <span class="project-tape" aria-hidden="true"></span>
+              
+              <div class="project-plate-top">
+                <span class="project-badge-num">NO. 01</span>
+                <span class="project-badge-tag">SYSTEM DESIGN</span>
+              </div>
+
+              <!-- Real Hardware Architecture & Dispenser Schematic -->
+              <img src="images/projects/printing-kiosk.png" alt="Self-Service Printing Kiosk automated dispenser circuit schematic" loading="lazy" style="width: 100%; height: 100%; object-fit: contain; object-position: center; background-color: #ffffff; padding: 0.6rem;">
+
+              <a class="project-quick-action" href="projects/printing-kiosk.html" aria-label="Explore Printing Kiosk Case Study">
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+
+            <div class="project-meta-row">
+              <span>RASPBERRY PI &bull; HARDWARE</span>
+              <span>&bull;</span>
+              <span>CAPSTONE DESIGN</span>
+            </div>
+
+            <h3 class="project-title">
+              <a href="projects/printing-kiosk.html" style="color: inherit; text-decoration: none;">Self-Service Printing Kiosk</a>
+            </h3>
+
+            <p class="project-snippet">
+              A standalone document terminal integrating Raspberry Pi processing, dual-printer spooling (Short/A4 &amp; Long), stepper motor automated dispenser, and coin/payment handling.
+            </p>
+
+            <div class="project-tech-pills">
+              <span class="tech-pill">Raspberry Pi</span>
+              <span class="tech-pill">Epson L121</span>
+              <span class="tech-pill">NEMA 17 Stepper</span>
+              <span class="tech-pill">Coin Hopper</span>
+              <span class="tech-pill">Relay Logic</span>
+            </div>
+
+            <div class="project-links-row" style="display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem;">
+              <a class="pad-btn" href="https://github.com/Pia-Macabangon/Printing-Kiosk" target="_blank" rel="noopener noreferrer" style="font-size: 0.6875rem; padding: 0.3rem 0.65rem; display: inline-flex; align-items: center; gap: 0.35rem;" title="View Printing-Kiosk on GitHub">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                <span>GitHub ↗</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- PROJECT 02: AquaSense -->
+          <article class="project-card">
+            <div class="project-thumb-frame" onclick="window.location.href='projects/aquasense.html'">
+              <span class="project-tape" aria-hidden="true"></span>
+              
+              <div class="project-plate-top">
+                <span class="project-badge-num">NO. 02</span>
+                <span class="project-badge-tag">EMBEDDED SYSTEMS</span>
+              </div>
+
+              <!-- Real Proteus Circuit Schematic -->
+              <img src="images/projects/aquasense.png" alt="AquaSense Arduino and sensor circuit simulation diagram" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; object-position: center; background-color: #dbe4df;">
+
+              <a class="project-quick-action" href="projects/aquasense.html" aria-label="Explore AquaSense Case Study">
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+
+            <div class="project-meta-row">
+              <span>ARDUINO &bull; FIRMWARE</span>
+              <span>&bull;</span>
+              <span>ICCT ENGINEERING LAB</span>
+            </div>
+
+            <h3 class="project-title">
+              <a href="projects/aquasense.html" style="color: inherit; text-decoration: none;">AquaSense</a>
+            </h3>
+
+            <p class="project-snippet">
+              A comprehensive water-quality monitoring system simulating real-time pH Meter V1.0, Turbidity, TDS, and temperature sensing with an I2C OLED display on Arduino Uno.
+            </p>
+
+            <div class="project-tech-pills">
+              <span class="tech-pill">Arduino Uno</span>
+              <span class="tech-pill">pH Meter V1.0</span>
+              <span class="tech-pill">Turbidity</span>
+              <span class="tech-pill">TDS Sensor</span>
+              <span class="tech-pill">OLED Display</span>
+            </div>
+
+            <div class="project-links-row" style="display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem;">
+              <a class="pad-btn" href="https://github.com/Pia-Macabangon/AquaSense" target="_blank" rel="noopener noreferrer" style="font-size: 0.6875rem; padding: 0.3rem 0.65rem; display: inline-flex; align-items: center; gap: 0.35rem;" title="View AquaSense on GitHub">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                <span>GitHub ↗</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- PROJECT 03: StockAlert -->
+          <article class="project-card">
+            <div class="project-thumb-frame" onclick="window.location.href='projects/stockalert.html'">
+              <span class="project-tape" aria-hidden="true"></span>
+              
+              <div class="project-plate-top">
+                <span class="project-badge-num">NO. 03</span>
+                <span class="project-badge-tag">APPLICATION / GUI</span>
+              </div>
+
+              <!-- Real Application Login Screen -->
+              <img src="images/projects/stockalert.png" alt="StockAlert application login interface screenshot" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; object-position: center top; background-color: #ffffff;">
+
+              <a class="project-quick-action" href="projects/stockalert.html" aria-label="Explore StockAlert Case Study">
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+
+            <div class="project-meta-row">
+              <span>JAVA &bull; DESKTOP / WEB</span>
+              <span>&bull;</span>
+              <span>CLIENT DASHBOARD</span>
+            </div>
+
+            <h3 class="project-title">
+              <a href="projects/stockalert.html" style="color: inherit; text-decoration: none;">StockAlert</a>
+            </h3>
+
+            <p class="project-snippet">
+              An inventory and market watchlist management application featuring secure user authentication, inventory threshold triggers, and real-time visualization graphs.
+            </p>
+
+            <div class="project-tech-pills">
+              <span class="tech-pill">Java</span>
+              <span class="tech-pill">Swing GUI</span>
+              <span class="tech-pill">Authentication</span>
+              <span class="tech-pill">Database / SQL</span>
+              <span class="tech-pill">Analytics</span>
+            </div>
+
+            <div class="project-links-row" style="display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem;">
+              <a class="pad-btn" href="https://github.com/Pia-Macabangon/StockAlert" target="_blank" rel="noopener noreferrer" style="font-size: 0.6875rem; padding: 0.3rem 0.65rem; display: inline-flex; align-items: center; gap: 0.35rem;" title="View StockAlert on GitHub">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                <span>GitHub ↗</span>
+              </a>
+            </div>
+          </article>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 06: CONNECT -->
+    <section class="connect-section" id="connect">
+      <div class="container-editorial">
+        <div class="connect-card art-sheet">
+          <span class="paper-tape" aria-hidden="true"></span>
+
+          <div style="max-width: 650px;">
+            <div class="section-eyebrow" style="margin-bottom: 0.75rem;">
+              <span class="meta-mono text-oxblood">06</span>
+              <span class="eyebrow-line"></span>
+              <span class="label-eyebrow">Let's Connect</span>
+            </div>
+            <h2 class="font-display" style="font-size: clamp(2rem, 4vw, 3.25rem); font-weight: 400; line-height: 1.05; letter-spacing: -0.025em; color: var(--color-ink); margin: 0;">
+              Feel free to reach out <br>
+              across any of these <span class="display-italic" style="color: var(--color-oxblood);">platforms.</span>
+            </h2>
+            <p style="font-size: 1.0625rem; color: var(--color-ash); line-height: 1.6; margin-top: 1rem;">
+              Whether for student collaborations, computer engineering discussions, or software projects &mdash; feel free to say hello!
+            </p>
+          </div>
+
+          <div class="social-pills-row">
+            <a class="social-pill" href="mailto:piamacabangon@gmail.com">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--color-oxblood); flex-shrink: 0;">
+                <rect width="20" height="16" x="2" y="4" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+              <span>piamacabangon@gmail.com</span>
+            </a>
+            <a class="social-pill" href="https://github.com/Pia-Macabangon" target="_blank" rel="noopener noreferrer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink: 0;">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+              <span>github.com/Pia-Macabangon</span>
+            </a>
+            <a class="social-pill" href="https://www.linkedin.com/in/pia-macabangon" target="_blank" rel="noopener noreferrer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink: 0;">
+                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9h2.77v8.37H6.46v-8.37M7.85 6.54a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2z"/>
+              </svg>
+              <span>linkedin.com/in/pia-macabangon</span>
+            </a>
+            <a class="social-pill" href="resume.html" target="_blank" rel="noopener noreferrer" style="border-color: var(--color-oxblood);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--color-oxblood); flex-shrink: 0;">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" x2="8" y1="13" y2="13"/>
+                <line x1="16" x2="8" y1="17" y2="17"/>
+              </svg>
+              <span style="color: var(--color-oxblood); font-weight: 600;">Print / Download Resume PDF</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container-editorial">
+      <div class="footer-inner">
+        <div>
+          <span class="font-display" style="font-size: 1.1rem; color: var(--color-ink);">Pia Macabangon</span>
+          <span style="margin: 0 0.5rem; opacity: 0.3;">&middot;</span>
+          <span class="meta-mono" style="color: var(--color-ash);">Made of paper, code &amp; imagination.</span>
+        </div>
+
+        <div class="meta-mono" style="color: var(--color-ash);">
+          &copy; MMXXIV&ndash;MMXXVI Pia Macabangon. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SIGNATURE INK / PENCIL TRAIL CANVAS -->
+  <canvas id="ink-trail" aria-hidden="true"></canvas>
+
+  <!-- miggs.dev BOTTOM SCROLL PROGRESS WIDGET -->
+  <div id="scroll-progress-widget" class="scroll-progress-widget" aria-hidden="true">
+    <div class="scroll-hint">[ KEEP SCROLLING ]</div>
+    <div class="progress-box">
+      <span class="progress-label">PROGRESS</span>
+      <div class="progress-track">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+      <span id="progress-percent" class="progress-pct">0%</span>
+    </div>
+  </div>
+
+</body>
+</html>

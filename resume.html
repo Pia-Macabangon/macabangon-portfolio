@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resume — Pia Macabangon</title>
+  <meta name="description" content="Resume of Pia Macabangon, 4th Year BS Computer Engineering student at ICCT Colleges Inc.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+  <style>
+    /* CSS Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #f4f4f5;
+      color: #111;
+      font-family: "EB Garamond", "Times New Roman", Times, Georgia, serif;
+      font-size: 11pt;
+      line-height: 1.35;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Print & Action Bar */
+    .action-bar {
+      width: 100%;
+      max-width: 8.5in;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.1rem;
+      background-color: #111;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 4px;
+      border: 1px solid #111;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .action-btn:hover {
+      background-color: #333;
+    }
+
+    .action-btn.secondary {
+      background-color: #fff;
+      color: #111;
+      border-color: #ccc;
+    }
+
+    .action-btn.secondary:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Resume Document Sheet (matches 8.5 x 11 inch paper) */
+    .resume-sheet {
+      width: 100%;
+      max-width: 8.5in;
+      min-height: 11in;
+      background: #ffffff;
+      padding: 0.55in 0.65in;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e2e5;
+    }
+
+    /* Header Section */
+    .resume-header {
+      text-align: center;
+      margin-bottom: 0.9rem;
+    }
+
+    .resume-name {
+      font-family: "EB Garamond", "Times New Roman", Times, serif;
+      font-size: 24pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+      color: #000;
+    }
+
+    .resume-contacts {
+      font-size: 10pt;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem 0.65rem;
+      color: #222;
+    }
+
+    .resume-contacts a {
+      color: #111;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .resume-contacts a:hover {
+      border-bottom-color: #111;
+    }
+
+    .contact-sep {
+      color: #777;
+    }
+
+    /* Section Styling */
+    .section-title {
+      font-size: 11.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #111;
+      padding-bottom: 2px;
+      margin-top: 0.85rem;
+      margin-bottom: 0.45rem;
+      color: #000;
+    }
+
+    /* Item Blocks */
+    .resume-item {
+      margin-bottom: 0.6rem;
+    }
+
+    .item-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 10.75pt;
+    }
+
+    .item-title-bold {
+      font-weight: 700;
+      color: #000;
+    }
+
+    .item-meta-right {
+      font-size: 10pt;
+      color: #222;
+      font-style: normal;
+    }
+
+    .item-sub-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 10pt;
+      margin-bottom: 0.25rem;
+    }
+
+    .item-subtitle {
+      font-style: italic;
+      color: #222;
+    }
+
+    .tech-stack-tag {
+      font-style: normal;
+      font-size: 9.5pt;
+      color: #333;
+    }
+
+    /* Bullet List */
+    .resume-bullets {
+      list-style-type: none;
+      padding-left: 1rem;
+      margin: 0.15rem 0 0.35rem 0;
+    }
+
+    .resume-bullets li {
+      position: relative;
+      font-size: 10pt;
+      line-height: 1.35;
+      color: #111;
+      margin-bottom: 0.2rem;
+    }
+
+    .resume-bullets li::before {
+      content: "•";
+      position: absolute;
+      left: -0.85rem;
+      top: 0;
+      color: #000;
+    }
+
+    .resume-bullets strong {
+      font-weight: 600;
+      color: #000;
+    }
+
+    /* Skills Grid / Block */
+    .skills-block {
+      font-size: 10pt;
+      line-height: 1.4;
+    }
+
+    .skill-category {
+      margin-bottom: 0.25rem;
+    }
+
+    .skill-category strong {
+      font-weight: 700;
+      color: #000;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .action-bar {
+        display: none !important;
+      }
+
+      .resume-sheet {
+        border: none;
+        box-shadow: none;
+        padding: 0.4in 0.5in;
+        max-width: 100%;
+        min-height: auto;
+      }
+
+      @page {
+        size: letter;
+        margin: 0.4in 0.5in;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Bar (Hidden when printing or saving as PDF) -->
+  <div class="action-bar">
+    <a class="action-btn secondary" href="index.html">
+      <span>&larr; Return to Portfolio</span>
+    </a>
+    <div style="display: flex; gap: 0.75rem;">
+      <button class="action-btn" onclick="window.print()">
+        <span>Print or Save as PDF 📄</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- RESUME SHEET (MATCHES EXACT JAKE'S LATEX FORMAT) -->
+  <main class="resume-sheet">
+
+    <!-- HEADER -->
+    <header class="resume-header">
+      <h1 class="resume-name">Pia Macabangon</h1>
+      <div class="resume-contacts">
+        <a href="mailto:piamacabangon@gmail.com">piamacabangon@gmail.com</a>
+        <span class="contact-sep">|</span>
+        <a href="https://linkedin.com/in/pia-macabangon" target="_blank" rel="noopener noreferrer">linkedin.com/in/pia-macabangon</a>
+        <span class="contact-sep">|</span>
+        <a href="https://github.com/Pia-Macabangon" target="_blank" rel="noopener noreferrer">github.com/Pia-Macabangon</a>
+        <span class="contact-sep">|</span>
+        <span>Philippines</span>
+      </div>
+    </header>
+
+    <!-- EDUCATION -->
+    <section>
+      <h2 class="section-title">Education</h2>
+
+      <div class="resume-item">
+        <div class="item-header-row">
+          <span class="item-title-bold">ICCT Colleges Inc.</span>
+          <span class="item-meta-right">Cainta, Rizal, Philippines</span>
+        </div>
+        <div class="item-sub-row">
+          <span class="item-subtitle">Bachelor of Science in Computer Engineering (4th Year)</span>
+          <span class="item-meta-right">2023 &ndash; 2027</span>
+        </div>
+        <ul class="resume-bullets">
+          <li><strong>Relevant Coursework:</strong> Data Structures &amp; Algorithms, Object-Oriented Programming, Computer Architecture, Embedded Systems, Operating Systems, Database Management Systems, Software Engineering, Microprocessors &amp; Interfacing.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ACADEMIC COURSEWORK & LABORATORY PRACTICALS -->
+    <section>
+      <h2 class="section-title">Academic Coursework &amp; Laboratory Practicals</h2>
+
+      <!-- Practicum 1 -->
+      <div class="resume-item">
+        <div class="item-header-row">
+          <div>
+            <span class="item-title-bold">Microcontrollers &amp; Embedded Systems Laboratory</span>
+            <span class="tech-stack-tag">| C/C++, Arduino, ESP32, Digital Logic, Sensors, Raspberry Pi</span>
+          </div>
+          <span class="item-meta-right">2025 &ndash; 2026</span>
+        </div>
+        <ul class="resume-bullets">
+          <li>Conducted laboratory experiments interfacing <strong>ESP32 and Arduino microcontrollers</strong> with temperature sensors, ultrasonic modules, and output peripherals.</li>
+          <li>Analyzed digital logic circuits, timing diagrams, and serial communication buses (UART, I2C, SPI) for hardware telemetry.</li>
+          <li>Programmed embedded firmware in C/C++ handling interrupts, analog-to-digital conversions, and register-level control.</li>
+        </ul>
+      </div>
+
+      <!-- Practicum 2 -->
+      <div class="resume-item">
+        <div class="item-header-row">
+          <div>
+            <span class="item-title-bold">Data Structures &amp; Object-Oriented Software Practicum</span>
+            <span class="tech-stack-tag">| C++, Java, Python, Algorithms, OOP Patterns</span>
+          </div>
+          <span class="item-meta-right">2024 &ndash; 2025</span>
+        </div>
+        <ul class="resume-bullets">
+          <li>Implemented foundational data structures from scratch (linked lists, binary search trees, hash maps) and evaluated asymptotic time complexity.</li>
+          <li>Analyzed searching, sorting, and graph traversal algorithms to solve algorithmic programming problems.</li>
+          <li>Applied object-oriented principles (inheritance, encapsulation, polymorphism, modularity) across software programming assignments.</li>
+        </ul>
+      </div>
+
+      <!-- Practicum 3 -->
+      <div class="resume-item">
+        <div class="item-header-row">
+          <div>
+            <span class="item-title-bold">Database Management Systems &amp; Web Development</span>
+            <span class="tech-stack-tag">| SQL, MySQL, HTML5, CSS3, JavaScript</span>
+          </div>
+          <span class="item-meta-right">2025 &ndash; 2026</span>
+        </div>
+        <ul class="resume-bullets">
+          <li>Designed relational database schemas, entity-relationship diagrams (ERDs), and normalization up to 3NF/BCNF to prevent redundancy.</li>
+          <li>Authored complex SQL queries utilizing multi-table joins, subqueries, grouping, and indexing inside <strong>MySQL</strong>.</li>
+          <li>Constructed responsive, accessible client interfaces adhering to modern web standards, semantic HTML5, and CSS grid layouts.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ACADEMIC & PRACTICAL EXPERIENCE -->
+    <section>
+      <h2 class="section-title">Academic &amp; Project Experience</h2>
+
+      <div class="resume-item">
+        <div class="item-header-row">
+          <span class="item-title-bold">College of Computer Studies &amp; Engineering &mdash; ICCT Colleges Inc.</span>
+          <span class="item-meta-right">08/2023 &ndash; Present</span>
+        </div>
+        <div class="item-sub-row">
+          <span class="item-subtitle">Computer Engineering Student &amp; Project Lead</span>
+          <span class="item-meta-right">Rizal, Philippines</span>
+        </div>
+        <ul class="resume-bullets">
+          <li>Collaborated with student engineering teams to design, simulate, and assemble hardware-software laboratory prototypes.</li>
+          <li>Assisted peer students in debugging C++ object-oriented algorithms, data structures, and embedded circuit logic.</li>
+          <li>Conducted rigorous code reviews and documentation utilizing <strong>Git</strong> and <strong>GitHub</strong> version control practices.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- TECHNICAL SKILLS (REPLACED ACHIEVEMENTS & ACTIVITIES) -->
+    <section>
+      <h2 class="section-title">Technical Skills</h2>
+
+      <div class="skills-block">
+        <div class="skill-category">
+          <strong>Languages:</strong> C/C++, Python, Java, JavaScript, SQL, HTML5, CSS3
+        </div>
+        <div class="skill-category">
+          <strong>Hardware &amp; Embedded Systems:</strong> Arduino, ESP32, Microcontroller Interfacing, Digital Logic Design, Circuit Prototyping, Sensors &amp; Actuators
+        </div>
+        <div class="skill-category">
+          <strong>Backend &amp; Web Development:</strong> Node.js, Express.js, RESTful APIs, React, Tailwind CSS, Vite
+        </div>
+        <div class="skill-category">
+          <strong>Databases:</strong> MySQL, PostgreSQL, SQLite, MongoDB, PHPMyAdmin, Database Design &amp; Normalization
+        </div>
+        <div class="skill-category">
+          <strong>Tools &amp; Platforms:</strong> Git, GitHub, VS Code, Windows Terminal
+        </div>
+      </div>
+    </section>
+
+    <!-- CERTIFICATIONS & MEMBERSHIPS -->
+    <section>
+      <h2 class="section-title">Certifications &amp; Memberships</h2>
+      <ul class="resume-bullets" style="margin-top: 0.25rem;">
+        <li><strong>Advancing Secure Networking for Smart Environment: Design, Threat Modeling, and Mitigation Strategies</strong> &mdash; ICCT Amphitheater, Engr. Mark Anthony Melendrez (March 2026)</li>
+        <li><strong>Bioinformatics and Digital Science Information in the Philippine Context</strong> &mdash; ICCT Amphitheater, Dr. Ian Kendrich Fontanilla (March 2026)</li>
+        <li><strong>Advancing Research and Development in IoT for Smart Environments</strong> &mdash; 12th Engineering Day, ICCT Colleges (March 2025)</li>
+        <li><strong>Institute of Computer Engineers of the Philippines (ICPEP) ICCT Chapter</strong> &mdash; Active Member in Good Standing, A.Y. 2024 &ndash; 2025 (Third Trimester)</li>
+        <li><strong>ICCT Engineering Society (IES)</strong> &mdash; Active Member in Good Standing, Third Trimester &amp; OSO Membership Day (2024 &ndash; 2025)</li>
+      </ul>
+    </section>
+
+  </main>
+
+</body>
+</html>

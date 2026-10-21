@@ -1,0 +1,28 @@
+PIA NICOLE MACABANGON
+Computer Engineering Student
+
+Email: your.email@example.com
+Location: Philippines
+GitHub: https://github.com/your-username
+LinkedIn: https://www.linkedin.com/in/your-profile
+
+PROFILE
+Computer Engineering student interested in software development, embedded systems, IoT, and practical technology projects. Enjoys learning by building prototypes and designing solutions to everyday problems.
+
+EDUCATION
+BS Computer Engineering
+ICCT Colleges
+[Expected graduation year]
+
+PROJECTS
+AquaSense — Water-quality monitoring prototype concept
+StockAlert WebApp — Stock watchlist and alert dashboard concept
+Self-Service Printing Kiosk — Automated printing kiosk system design
+
+SKILLS
+HTML, CSS, JavaScript (update to match your actual proficiency)
+Arduino and sensor prototyping
+UI concepts, system diagrams, and technical documentation
+
+NOTE
+Replace this template with your current details before sharing. This file is a text template, not a formatted CV.

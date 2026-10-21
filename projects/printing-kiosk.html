@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Self-Service Printing Kiosk &mdash; Pia Macabangon</title>
+  <meta name="description" content="Self-Service Printing Kiosk &mdash; Raspberry Pi automated document dispatch system concept by Pia Macabangon.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Inter+Tight:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:ital,wght@0,300..700;1,300..700&family=Reenie+Beanie&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="project.css">
+  <script src="../script.js" defer></script>
+</head>
+<body class="editorial-body">
+
+  <!-- Background Fading Pencil / Ink Trail Canvas -->
+  <canvas id="ink-trail" aria-hidden="true"></canvas>
+
+  <!-- Hand-Drawn Sketch Cursor -->
+  <div id="sketch-cursor" class="sketch-cursor" aria-hidden="true">
+    <svg viewBox="0 0 44 44">
+      <path d="M 7,20 C 8,11 15,6 23,6 C 33,6 39,13 38,23 C 37,32 30,38 21,38 C 12,38 6,31 7,22 C 7,16 11,10 18,8 C 26,6 34,10 36,18 C 38,26 33,34 25,35" stroke-linecap="round"/>
+      <path d="M 12,18 C 15,11 22,9 29,12 C 35,15 36,23 33,29 C 30,34 23,35 17,32 C 12,29 11,22 15,17" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="top-issue-bar meta-mono">
+      <div class="container-editorial" style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="text-oxblood font-semibold">CASE STUDY &bull; NO. 03</span>
+        <span>SYSTEM DESIGN &bull; RASPBERRY PI &bull; HARDWARE</span>
+        <span>PIA MACABANGON &bull; MMXXVI</span>
+      </div>
+    </div>
+
+    <div class="header-inner container-editorial">
+      <a class="wordmark" href="../index.html" aria-label="Pia Macabangon — Home">
+        <span class="wordmark-title">Pia <span class="display-italic" style="color: rgba(15, 15, 17, 0.75);">Macabangon</span></span>
+        <span class="wordmark-meta">Computer Engineering</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="nav-link" href="../index.html">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Index</span>
+        </a>
+        <a class="nav-link" href="../about.html">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <span>Portfolio</span>
+        </a>
+        <a class="nav-link" href="../index.html#projects" aria-current="page">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span>Projects</span>
+        </a>
+        <a class="nav-link" href="../about.html#experience">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          <span>Education</span>
+        </a>
+        <a class="nav-link" href="../about.html#skills">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+          <span>Skills</span>
+        </a>
+        <a class="nav-link" href="../index.html#the-wall">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          <span>The Wall</span>
+        </a>
+        <a class="nav-link" href="../index.html#connect">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <span>Contact</span>
+        </a>
+      </nav>
+
+      <div class="header-cta-group">
+        <a class="btn-commission" href="../resume.html" target="_blank" rel="noopener noreferrer">
+          <span>View CV / Resume</span>
+          <span style="font-size: 0.85rem;" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Project Content -->
+  <main class="container-editorial" style="padding-top: 3.5rem; padding-bottom: 6rem;">
+    <div style="margin-bottom: 2rem;">
+      <a class="back-link meta-mono" href="../index.html#projects" style="color: var(--color-oxblood); font-size: 0.8125rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>&larr;</span> <span>BACK TO ALL PROJECTS</span>
+      </a>
+    </div>
+
+    <div class="section-eyebrow" style="margin-bottom: 0.75rem;">
+      <span class="meta-mono text-oxblood font-semibold">PROJECT 03</span>
+      <span class="eyebrow-line"></span>
+      <span class="label-eyebrow">SYSTEM DESIGN &bull; HARDWARE INTEGRATION</span>
+    </div>
+
+    <h1 class="font-display" style="font-size: clamp(2.75rem, 6vw, 4.75rem); font-weight: 400; line-height: 1; letter-spacing: -0.035em; color: var(--color-ink); margin: 0 0 1.25rem;">
+      Self-Service <span class="display-italic" style="color: var(--color-oxblood);">Printing Kiosk.</span>
+    </h1>
+
+    <p style="font-size: 1.25rem; line-height: 1.5; color: var(--color-ash); max-width: 720px; margin: 0 0 3rem;">
+      A guided, self-contained terminal intended to assist users through document selection, hybrid digital payment, and automated dispatch.
+    </p>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 2.5rem;">
+      <a class="btn-primary-folio" href="https://github.com/Pia-Macabangon/Printing-Kiosk" target="_blank" rel="noopener noreferrer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        <span>View Project on GitHub</span>
+        <span aria-hidden="true">&nearr;</span>
+      </a>
+      <span class="meta-mono text-ash" style="font-size: 0.8125rem;">CAPSTONE SYSTEM ARCHITECTURE</span>
+    </div>
+
+    <!-- Hardware Schematic Showcase Card -->
+    <div class="art-sheet" style="padding: 1.5rem; background: #ffffff; border: 1px solid rgba(15, 15, 17, 0.15); border-radius: 4px; box-shadow: 0 10px 35px rgba(15, 15, 17, 0.08); margin-bottom: 3.5rem;">
+      <span class="paper-tape" aria-hidden="true"></span>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(15, 15, 17, 0.1); padding-bottom: 0.75rem;">
+        <span class="meta-mono text-oxblood font-semibold" style="font-size: 0.75rem;">WIRING &bull; AUTOMATED DISPENSER SUBSYSTEM</span>
+        <span class="meta-mono text-ash" style="font-size: 0.6875rem;">RASPBERRY PI &bull; DUAL EPSON L121 &bull; NEMA 17</span>
+      </div>
+      <div style="overflow: hidden; border-radius: 3px; background: #fff; text-align: center;">
+        <img src="../images/projects/printing-kiosk.png" alt="Self-Service Printing Kiosk full hardware and automated dispenser wiring schematic" style="width: 100%; max-height: 650px; object-fit: contain; display: block; margin: 0 auto;">
+      </div>
+      <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed rgba(15, 15, 17, 0.15); display: flex; justify-content: space-between; align-items: center;">
+        <span class="meta-mono text-ash" style="font-size: 0.75rem;">Figure 1.0 &mdash; Hardware interconnectivity and automated paper dispensing control.</span>
+        <a class="meta-mono" href="../images/projects/printing-kiosk.png" target="_blank" rel="noopener noreferrer" style="color: var(--color-oxblood); font-size: 0.75rem; text-decoration: none;">Open Full Resolution &nearr;</a>
+      </div>
+    </div>
+
+    <!-- Case Study Grid -->
+    <div class="detail-grid" style="margin-top: 3.5rem;">
+      <section class="art-sheet" style="padding: 2rem;">
+        <span class="meta-mono text-oxblood font-semibold" style="font-size: 0.75rem; display: block; margin-bottom: 0.5rem;">01 &bull; CONCEPT</span>
+        <h2 class="font-display" style="font-size: 1.5rem; margin-top: 0; color: var(--color-ink);">The Core Idea</h2>
+        <p style="font-size: 0.95rem; line-height: 1.7; color: var(--color-ink);">
+          A self-service kiosk concept built for campus corridors and student libraries. The kiosk guides customers through USB/cloud document uploads, print configurations, payment processing, and job spooling without human supervision.
+        </p>
+      </section>
+
+      <section class="art-sheet" style="padding: 2rem;">
+        <span class="meta-mono text-oxblood font-semibold" style="font-size: 0.75rem; display: block; margin-bottom: 0.5rem;">02 &bull; SUBSYSTEMS</span>
+        <h2 class="font-display" style="font-size: 1.5rem; margin-top: 0; color: var(--color-ink);">System Architecture</h2>
+        <ul style="font-size: 0.95rem; line-height: 1.8; color: var(--color-ink); padding-left: 1.25rem;">
+          <li><strong>Host Computing:</strong> Raspberry Pi 4 running dedicated kiosk environment</li>
+          <li><strong>Touch Interface:</strong> Responsive touchscreen layout with clear large targets</li>
+          <li><strong>Payment Subsystem:</strong> Hybrid cash validator and QR-based e-wallet reader</li>
+          <li><strong>Mechanical &amp; Power:</strong> Isolated power rails with surge and thermal protections</li>
+        </ul>
+      </section>
+
+      <section class="art-sheet" style="padding: 2rem;">
+        <span class="meta-mono text-oxblood font-semibold" style="font-size: 0.75rem; display: block; margin-bottom: 0.5rem;">03 &bull; CRAFT</span>
+        <h2 class="font-display" style="font-size: 1.5rem; margin-top: 0; color: var(--color-ink);">Engineering Focus</h2>
+        <p style="font-size: 0.95rem; line-height: 1.7; color: var(--color-ink);">
+          Partitioning a complex multi-device system into distinct subsystems: power distribution, controller communications, payment security, and paper queue management. High focus was placed on fail-safe paper jam recovery and reliable kiosk lockdown.
+        </p>
+      </section>
+
+      <section class="art-sheet" style="padding: 2rem;">
+        <span class="meta-mono text-oxblood font-semibold" style="font-size: 0.75rem; display: block; margin-bottom: 0.5rem;">04 &bull; STATUS</span>
+        <h2 class="font-display" style="font-size: 1.5rem; margin-top: 0; color: var(--color-ink);">Current Milestones</h2>
+        <p style="font-size: 0.95rem; line-height: 1.7; color: var(--color-ink);">
+          System design blueprints and user flow completed. Enclosure 3D modeling and peripheral driver scripting currently underway in computer engineering laboratory work.
+        </p>
+      </section>
+    </div>
+
+    <div style="margin-top: 4rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(15, 15, 17, 0.12); padding-top: 2rem;">
+      <a class="pad-btn" href="stockalert.html">
+        <span>&larr; Previous: StockAlert WebApp</span>
+      </a>
+      <a class="btn-primary-folio" href="../index.html#projects">
+        <span>Back to all projects &rarr;</span>
+      </a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container-editorial footer-inner meta-mono">
+      <span>PIA MACABANGON &bull; COMPUTER ENGINEERING &bull; ICCT COLLEGES</span>
+      <span>MMXXVI &bull; ALL RIGHTS RESERVED</span>
+    </div>
+  </footer>
+
+</body>
+</html>
